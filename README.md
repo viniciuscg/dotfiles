@@ -2,7 +2,7 @@
 
 A clean, minimal, and productive Linux desktop configuration using i3 window manager, Polybar, and Zsh.
 
-## 📸 Screenshots
+## Screenshots
 
 ### Main Workspace
 ![Main Workspace](example/main.png)
@@ -19,7 +19,7 @@ A clean, minimal, and productive Linux desktop configuration using i3 window man
 ### Spotify Integration
 ![Spotify Integration](example/spotify-pad.png)
 
-## 🚀 Quick Start
+## Quick Start
 
 Clone and install everything automatically:
 
@@ -31,37 +31,17 @@ chmod +x install.sh
 ```
 
 The installation script will:
-- ✅ Backup existing configurations
-- ✅ Install all system dependencies
-- ✅ Install Oh My Zsh and plugins
-- ✅ Install Python dependencies
-- ✅ Create all symbolic links
-- ✅ Install JetBrainsMono Nerd Font
-- ✅ Configure everything automatically
+- Backup existing configurations
+- Install all system dependencies
+- Install Oh My Zsh and plugins
+- Install Python dependencies
+- Create all symbolic links
+- Install JetBrainsMono Nerd Font
+- Configure everything automatically
 
 **No manual steps required!** Just run the script and restart i3.
 
-## 📋 Repository Structure
-
-```
-dotfiles/
-├── i3/                    # i3 window manager configuration
-│   ├── config             # Main config file (includes all modules)
-│   ├── *.conf             # Modular configuration files
-│   └── scripts/           # Helper scripts
-├── polybar/               # Polybar status bar
-│   ├── config.ini         # Main configuration
-│   ├── launch.sh         # Launch script
-│   └── modules/          # Custom modules
-├── picom/                 # Compositor configuration
-│   └── picom.conf        # Rounded corners, transparency
-├── zsh/                   # Zsh shell configuration
-│   └── .zshrc            # Zsh config with Oh My Zsh
-├── wallpaper/             # Wallpaper directory
-└── example/               # Screenshots
-```
-
-## 🎨 Features
+## Features
 
 ### i3 Window Manager
 - **Modular Configuration**: Split into logical files for easy maintenance
@@ -114,7 +94,7 @@ dotfiles/
 - `Mod + Shift + R` - Reload i3 configuration
 - `Mod + Shift + E` - Exit i3
 
-## 📦 Dependencies
+## Dependencies
 
 All dependencies are automatically installed by the script:
 
@@ -143,7 +123,7 @@ All dependencies are automatically installed by the script:
 ### Fonts
 - `JetBrainsMono Nerd Font` - Main font
 
-## 🔧 Customization
+## Customization
 
 ### Monitors
 Edit `i3/workspaces.conf` to configure workspace-to-monitor assignments:
@@ -167,14 +147,14 @@ Change the layout in `i3/autostart_additional.conf`:
 exec --no-startup-id setxkbmap br  # Change 'br' to your layout
 ```
 
-## 🛠️ Supported Distributions
+## Supported Distributions
 
 The installation script automatically detects and supports:
 - **Ubuntu/Debian** - Uses `apt`
 - **Arch Linux/Manjaro** - Uses `pacman`
 - **Fedora** - Uses `dnf`
 
-For other distributions, install dependencies manually and run the script.
+For other distributions, install the dependencies manually and run the script. You may encounter issues on systems other than Ubuntu, as they have not been tested.
 
 ## 📝 Notes
 
@@ -196,6 +176,6 @@ The installation script installs **everything** automatically:
 
 **Just run `./install.sh` and you're done!**
 
-## 📄 License
+## License
 
-Personal dotfiles - feel free to use and modify as needed.
+Personal dotfiles — feel free to use and modify them as needed. I encourage you to do so.
