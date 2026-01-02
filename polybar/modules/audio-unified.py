@@ -157,6 +157,38 @@ def get_device_name(sink):
         name = name[:12] + "..."
     return name if name else "Audio"
 
+def display_menu():
+    sinks = pactl("list sinks")
+    if not sinks:
+        return
+    
+    current_sink = get_default_sink()
+    menu_items = []
+    for line in sinks.splitlines():
+        if not line.strip():
+            continue
+        parts = line.split("\t")
+        if len(parts) > 1:
+            if "Name" in parts[1]:
+                sink_name = parts[1].split("Name: ")[1]
+                if sink_name == current_sink:
+                    menu_items.append(f"✓ {sink_name}")
+                else:
+                    menu_items.append(f"  {sink_name}")
+
+    result = subprocess.run(
+        ['dmenu', '-l', str(len(menu_items)), '-p', 'Select Audio Device:'],
+        input="\n".join(menu_items),
+        text=True,
+        capture_output=True,
+        timeout=100
+    )
+    if result.returncode == 0 and result.stdout.strip():
+        selected = result.stdout.strip()
+        match = re.search(r'(\d+)', selected)
+        if match:
+            pactl(f"set-default-sink {selected}")
+        
 def main():
     if len(sys.argv) < 2:
         display_audio()
@@ -173,6 +205,8 @@ def main():
         toggle_mute()
     elif cmd == "audio":
         display_audio()
+    elif cmd == "menu":
+        display_menu()
 
 
 if __name__ == "__main__":
