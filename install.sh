@@ -50,6 +50,7 @@ backup_existing() {
     [ -d "$HOME_DIR/.config/i3" ] && cp -r "$HOME_DIR/.config/i3" "$BACKUP_DIR/i3.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/polybar" ] && cp -r "$HOME_DIR/.config/polybar" "$BACKUP_DIR/polybar.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/picom" ] && cp -r "$HOME_DIR/.config/picom" "$BACKUP_DIR/picom.bak" 2>/dev/null || true
+    [ -d "$HOME_DIR/.config/kitty" ] && cp -r "$HOME_DIR/.config/kitty" "$BACKUP_DIR/kitty.bak" 2>/dev/null || true
     
     echo -e "${GREEN}✓ Backup created at: $BACKUP_DIR${NC}\n"
 }
@@ -86,7 +87,7 @@ install_dependencies() {
                 vim \
                 feh \
                 clipmenu \
-                gnome-terminal \
+                kitty \
                 spotify-client \
                 unzip \
                 wget \
@@ -115,7 +116,7 @@ install_dependencies() {
                 vim \
                 feh \
                 clipmenu \
-                gnome-terminal \
+                kitty \
                 spotify-launcher \
                 unzip \
                 wget \
@@ -144,7 +145,7 @@ install_dependencies() {
                 vim \
                 feh \
                 clipmenu \
-                gnome-terminal \
+                kitty \
                 unzip \
                 wget \
                 fontconfig
@@ -153,7 +154,7 @@ install_dependencies() {
         *)
             echo -e "${RED}Unsupported distribution: $DISTRO${NC}"
             echo -e "${YELLOW}Please install dependencies manually.${NC}"
-            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, gnome-terminal${NC}"
+            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty${NC}"
             exit 1
             ;;
     esac
@@ -207,6 +208,7 @@ create_directories() {
     mkdir -p "$HOME_DIR/.config/i3/scripts"
     mkdir -p "$HOME_DIR/.config/polybar/modules"
     mkdir -p "$HOME_DIR/.config/picom"
+    mkdir -p "$HOME_DIR/.config/kitty"
     mkdir -p "$HOME_DIR/.config/wallpaper"
     echo -e "${GREEN}✓ Directories created!${NC}\n"
 }
@@ -228,6 +230,9 @@ create_symlinks() {
     
     # picom
     ln -sf "$DOTFILES_DIR/picom/picom.conf" "$HOME_DIR/.config/picom/picom.conf"
+    
+    # kitty
+    ln -sf "$DOTFILES_DIR/kitty/kitty.conf" "$HOME_DIR/.config/kitty/kitty.conf"
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"

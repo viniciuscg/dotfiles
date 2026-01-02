@@ -1,6 +1,6 @@
 # Dotfiles - Minimalist Linux Environment
 
-A clean, minimal, and productive Linux desktop configuration using i3 window manager, Polybar, and Zsh.
+A clean, minimal, and productive Linux desktop configuration using i3 window manager, Polybar, Kitty terminal, and Zsh.
 
 ## Screenshots
 
@@ -58,6 +58,11 @@ The installation script will:
 - **Workspace Indicator**: Visual workspace switcher
 - **Minimalist Theme**: Clean dark theme with subtle colors
 
+### Kitty
+- **Modern Terminal**: Fast, feature-rich terminal emulator
+- **GPU Acceleration**: Hardware-accelerated rendering
+- **Customizable**: Extensive configuration options
+
 ### Picom
 - **Rounded Corners**: 14px corner radius
 - **Transparency**: Subtle transparency effects
@@ -114,7 +119,7 @@ All dependencies are automatically installed by the script:
 - `flameshot` - Screenshot tool
 - `feh` - Image viewer/wallpaper
 - `clipmenu` - Clipboard manager
-- `gnome-terminal` - Terminal emulator
+- `kitty` - Terminal emulator
 
 ### Python
 - `python3-dbus` - D-Bus integration
