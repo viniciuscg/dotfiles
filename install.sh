@@ -82,16 +82,23 @@ install_dependencies() {
                 python3-pip \
                 curl \
                 git \
-                xrandr \
                 flameshot \
                 vim \
                 feh \
-                clipmenu \
                 kitty \
                 spotify-client \
                 unzip \
                 wget \
                 fontconfig
+            
+            # Try to install clipmenu (may not be in all repositories)
+            if sudo apt install -y clipmenu 2>/dev/null; then
+                echo -e "${GREEN}✓ clipmenu installed${NC}"
+            else
+                echo -e "${YELLOW}⚠ clipmenu not available in repositories${NC}"
+                echo -e "${YELLOW}  Install manually: sudo apt install clipmenu${NC}"
+                echo -e "${YELLOW}  Or from source: https://github.com/cdown/clipmenu${NC}"
+            fi
             ;;
         arch|manjaro)
             echo -e "${YELLOW}Installing packages (Arch Linux)...${NC}"
@@ -134,7 +141,7 @@ install_dependencies() {
                 i3lock \
                 NetworkManager-applet \
                 dmenu \
-                xrandr \
+                xorg-xrandr \
                 acpi \
                 jq \
                 python3-dbus \
@@ -144,11 +151,18 @@ install_dependencies() {
                 flameshot \
                 vim \
                 feh \
-                clipmenu \
                 kitty \
                 unzip \
                 wget \
                 fontconfig
+            
+            # Try to install clipmenu (may not be in all repositories)
+            if sudo dnf install -y clipmenu 2>/dev/null; then
+                echo -e "${GREEN}✓ clipmenu installed${NC}"
+            else
+                echo -e "${YELLOW}⚠ clipmenu not available in repositories${NC}"
+                echo -e "${YELLOW}  Install manually or from source: https://github.com/cdown/clipmenu${NC}"
+            fi
             echo -e "${YELLOW}Note: Install Spotify manually from: https://www.spotify.com/download/linux/${NC}"
             ;;
         *)
