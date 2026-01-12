@@ -90,6 +90,21 @@ source $ZSH/oh-my-zsh.sh
 
 alias c='clear'
 
+source "/home/viniciusgoncalves/.local/share/emcash/_emcash"
+emcash() {
+  local SCRIPT_DIR="/home/viniciusgoncalves/emcash"
+  if [[ "$1" == "repo" || "$1" == "r" ]]; then
+    shift
+    cd "$SCRIPT_DIR/scripts" && source ./repo.sh "$@"
+  else
+    "$SCRIPT_DIR/emcash.sh" "$@"
+  fi
+}
+em() {
+  emcash "$@"
+}
+
+
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
 
@@ -104,3 +119,6 @@ alias c='clear'
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+
+# Configuração automática do Go
+export PATH=$PATH:/usr/local/go/bin
