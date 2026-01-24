@@ -1,30 +1,43 @@
 #!/usr/bin/bash
+# ~/.config/polybar/modules/battery.sh
 
-ACPI_OUTPUT=$(acpi -b)
+ACPI_OUTPUT=$(acpi -b 2>/dev/null)
+
+# Se não tem bateria, não mostra nada
+if [[ -z "$ACPI_OUTPUT" ]]; then
+    exit 0
+fi
+
 STATUS=$(echo "$ACPI_OUTPUT" | awk '{print $3}' | tr -d ',')
 CHARGE=$(echo "$ACPI_OUTPUT" | grep -oP '\d+(?=%)' | head -1)
 
-ICON=""
-FORMAT=""
-
+# Ícones baseados na carga
 if [[ "$STATUS" == "Charging" ]]; then
-    ICON="󰂄  "
+    if [[ $CHARGE -ge 90 ]]; then
+        ICON="󰂅"
+    elif [[ $CHARGE -ge 70 ]]; then
+        ICON="󰂋"
+    elif [[ $CHARGE -ge 50 ]]; then
+        ICON="󰂉"
+    elif [[ $CHARGE -ge 30 ]]; then
+        ICON="󰂇"
+    else
+        ICON="󰂆"
+    fi
 else
-    ICON="󰁹  "
+    if [[ $CHARGE -ge 90 ]]; then
+        ICON="󰁹"
+    elif [[ $CHARGE -ge 70 ]]; then
+        ICON="󰂀"
+    elif [[ $CHARGE -ge 50 ]]; then
+        ICON="󰁾"
+    elif [[ $CHARGE -ge 30 ]]; then
+        ICON="󰁼"
+    elif [[ $CHARGE -ge 10 ]]; then
+        ICON="󰁺"
+    else
+        ICON="󰂃"
+    fi
 fi
 
-if [[ $CHARGE -lt 10 ]]; then
-    CHARGE_COLOR="%{F#B33D43}"
-elif [[ $CHARGE -lt 30 ]]; then
-    CHARGE_COLOR="%{F#F27F24}"
-elif [[ $CHARGE -lt 60 ]]; then
-    CHARGE_COLOR="%{F#E5C167}"
-elif [[ $CHARGE -lt 100 ]]; then
-    CHARGE_COLOR="%{F#6FB379}"
-else
-    CHARGE_COLOR="%{F#6FB379}"
-fi
-
-FORMAT="$CHARGE_COLOR $ICON $CHARGE%%{F-}"
-
-echo $FORMAT
+echo "$ICON $CHARGE%"
