@@ -73,7 +73,6 @@ install_dependencies() {
                 dex \
                 xss-lock \
                 i3lock \
-                network-manager-applet \
                 dmenu \
                 x11-xserver-utils \
                 acpi \
@@ -86,7 +85,6 @@ install_dependencies() {
                 vim \
                 feh \
                 kitty \
-                spotify-client \
                 unzip \
                 wget \
                 fontconfig \
