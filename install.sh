@@ -89,7 +89,10 @@ install_dependencies() {
                 spotify-client \
                 unzip \
                 wget \
-                fontconfig
+                fontconfig \
+                pulseaudio \
+                pulseaudio-utils \
+                rofi
             
             # Try to install clipmenu (may not be in all repositories)
             if sudo apt install -y clipmenu 2>/dev/null; then
@@ -127,7 +130,10 @@ install_dependencies() {
                 spotify-launcher \
                 unzip \
                 wget \
-                fontconfig
+                fontconfig \
+                pulseaudio \
+                pulseaudio-alsa \
+                rofi
             ;;
         fedora)
             echo -e "${YELLOW}Installing packages (Fedora)...${NC}"
@@ -154,7 +160,10 @@ install_dependencies() {
                 kitty \
                 unzip \
                 wget \
-                fontconfig
+                fontconfig \
+                pulseaudio \
+                pulseaudio-utils \
+                rofi
             
             # Try to install clipmenu (may not be in all repositories)
             if sudo dnf install -y clipmenu 2>/dev/null; then
@@ -168,7 +177,7 @@ install_dependencies() {
         *)
             echo -e "${RED}Unsupported distribution: $DISTRO${NC}"
             echo -e "${YELLOW}Please install dependencies manually.${NC}"
-            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty${NC}"
+            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty, pulseaudio, rofi${NC}"
             exit 1
             ;;
     esac
@@ -294,7 +303,7 @@ make_executable() {
 
 # Function to install fonts
 install_fonts() {
-    echo -e "${YELLOW}[10/10] Installing JetBrainsMono Nerd Font...${NC}"
+    echo -e "${YELLOW}[10/10] Installing Nerd Fonts (JetBrainsMono, FiraCode, VictorMono)...${NC}"
     DISTRO=$(detect_distro)
     FONT_DIR="$HOME_DIR/.local/share/fonts"
     mkdir -p "$FONT_DIR"
@@ -302,11 +311,11 @@ install_fonts() {
     case $DISTRO in
         arch|manjaro)
             if command_exists yay; then
-                yay -S --noconfirm nerd-fonts-jetbrains-mono 2>/dev/null && \
+                yay -S --noconfirm nerd-fonts-jetbrains-mono nerd-fonts-fira-code nerd-fonts-victor-mono 2>/dev/null && \
                 echo -e "${GREEN}✓ Fonts installed via yay!${NC}" || \
                 download_fonts_manual
             elif command_exists paru; then
-                paru -S --noconfirm nerd-fonts-jetbrains-mono 2>/dev/null && \
+                paru -S --noconfirm nerd-fonts-jetbrains-mono nerd-fonts-fira-code nerd-fonts-victor-mono 2>/dev/null && \
                 echo -e "${GREEN}✓ Fonts installed via paru!${NC}" || \
                 download_fonts_manual
             else
@@ -315,11 +324,9 @@ install_fonts() {
             ;;
         ubuntu|debian)
             if sudo apt install -y fonts-jetbrains-mono 2>/dev/null; then
-                echo -e "${GREEN}✓ Fonts installed via apt!${NC}"
-                download_fonts_manual  # Still download Nerd Font version
-            else
-                download_fonts_manual
+                echo -e "${GREEN}✓ JetBrainsMono installed via apt!${NC}"
             fi
+            download_fonts_manual  # Download Nerd Font versions
             ;;
         *)
             download_fonts_manual
@@ -335,40 +342,56 @@ install_fonts() {
 download_fonts_manual() {
     FONT_DIR="$HOME_DIR/.local/share/fonts"
     TEMP_DIR=$(mktemp -d)
+    FONT_VERSION="v3.1.1"
     
-    echo -e "${YELLOW}Downloading JetBrainsMono Nerd Font...${NC}"
-    if command_exists wget; then
-        wget -q --show-progress -P "$TEMP_DIR" \
-            "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip" 2>/dev/null || \
-        wget -q -P "$TEMP_DIR" \
-            "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
-    elif command_exists curl; then
-        curl -L -o "$TEMP_DIR/JetBrainsMono.zip" \
-            "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip" 2>/dev/null || true
-    else
+    if ! command_exists wget && ! command_exists curl; then
         echo -e "${RED}wget or curl required to download fonts.${NC}"
         echo -e "${YELLOW}Download manually from: https://www.nerdfonts.com/font-downloads${NC}"
+        rm -rf "$TEMP_DIR"
         return 1
     fi
     
-    if [ -f "$TEMP_DIR/JetBrainsMono.zip" ]; then
-        unzip -q -o "$TEMP_DIR/JetBrainsMono.zip" -d "$FONT_DIR" 2>/dev/null || {
-            echo -e "${YELLOW}Installing unzip...${NC}"
-            case $(detect_distro) in
-                ubuntu|debian) sudo apt install -y unzip ;;
-                arch|manjaro) sudo pacman -S --noconfirm unzip ;;
-                fedora) sudo dnf install -y unzip ;;
-            esac
-            unzip -q -o "$TEMP_DIR/JetBrainsMono.zip" -d "$FONT_DIR"
-        }
-        rm -rf "$TEMP_DIR"
-        echo -e "${GREEN}✓ Fonts downloaded and installed!${NC}"
-    else
-        echo -e "${RED}Error downloading fonts.${NC}"
-        echo -e "${YELLOW}Download manually from: https://www.nerdfonts.com/font-downloads${NC}"
-        rm -rf "$TEMP_DIR"
-        return 1
-    fi
+    # Download function
+    download_font() {
+        local font_name=$1
+        local url="https://github.com/ryanoasis/nerd-fonts/releases/download/${FONT_VERSION}/${font_name}.zip"
+        local zip_file="$TEMP_DIR/${font_name}.zip"
+        
+        echo -e "${YELLOW}Downloading ${font_name} Nerd Font...${NC}"
+        if command_exists wget; then
+            wget -q --show-progress -O "$zip_file" "$url" 2>/dev/null || \
+            wget -q -O "$zip_file" "$url" || return 1
+        elif command_exists curl; then
+            curl -L -o "$zip_file" "$url" || return 1
+        fi
+        
+        if [ -f "$zip_file" ]; then
+            local font_subdir="$FONT_DIR/${font_name}"
+            mkdir -p "$font_subdir"
+            unzip -q -o "$zip_file" -d "$font_subdir" 2>/dev/null || {
+                echo -e "${YELLOW}Installing unzip...${NC}"
+                case $(detect_distro) in
+                    ubuntu|debian) sudo apt install -y unzip ;;
+                    arch|manjaro) sudo pacman -S --noconfirm unzip ;;
+                    fedora) sudo dnf install -y unzip ;;
+                esac
+                unzip -q -o "$zip_file" -d "$font_subdir"
+            }
+            echo -e "${GREEN}✓ ${font_name} installed!${NC}"
+            rm -f "$zip_file"
+        else
+            echo -e "${YELLOW}⚠ Failed to download ${font_name}${NC}"
+            return 1
+        fi
+    }
+    
+    # Download all fonts
+    download_font "JetBrainsMono"
+    download_font "FiraCode"
+    download_font "VictorMono"
+    
+    rm -rf "$TEMP_DIR"
+    echo -e "${GREEN}✓ All fonts downloaded and installed!${NC}"
 }
 
 # Main function
