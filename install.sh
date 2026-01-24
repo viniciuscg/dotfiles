@@ -43,7 +43,7 @@ command_exists() {
 
 # Function to backup existing configurations
 backup_existing() {
-    echo -e "${YELLOW}[1/10] Backing up existing configurations...${NC}"
+    echo -e "${YELLOW}[1/11] Backing up existing configurations...${NC}"
     mkdir -p "$BACKUP_DIR"
     
     [ -f "$HOME_DIR/.zshrc" ] && cp "$HOME_DIR/.zshrc" "$BACKUP_DIR/.zshrc.bak"
@@ -51,6 +51,7 @@ backup_existing() {
     [ -d "$HOME_DIR/.config/polybar" ] && cp -r "$HOME_DIR/.config/polybar" "$BACKUP_DIR/polybar.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/picom" ] && cp -r "$HOME_DIR/.config/picom" "$BACKUP_DIR/picom.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/kitty" ] && cp -r "$HOME_DIR/.config/kitty" "$BACKUP_DIR/kitty.bak" 2>/dev/null || true
+    [ -d "$HOME_DIR/.config/dunst" ] && cp -r "$HOME_DIR/.config/dunst" "$BACKUP_DIR/dunst.bak" 2>/dev/null || true
     
     echo -e "${GREEN}✓ Backup created at: $BACKUP_DIR${NC}\n"
 }
@@ -58,7 +59,7 @@ backup_existing() {
 # Function to install system dependencies
 install_dependencies() {
     DISTRO=$(detect_distro)
-    echo -e "${YELLOW}[2/10] Installing system dependencies...${NC}"
+    echo -e "${YELLOW}[2/11] Installing system dependencies...${NC}"
     echo -e "${BLUE}Detected distribution: $DISTRO${NC}\n"
     
     case $DISTRO in
@@ -90,7 +91,9 @@ install_dependencies() {
                 fontconfig \
                 pulseaudio \
                 pulseaudio-utils \
-                rofi
+                rofi \
+                dunst \
+                brightnessctl
             
             # Try to install clipmenu (may not be in all repositories)
             if sudo apt install -y clipmenu 2>/dev/null; then
@@ -131,7 +134,9 @@ install_dependencies() {
                 fontconfig \
                 pulseaudio \
                 pulseaudio-alsa \
-                rofi
+                rofi \
+                dunst \
+                brightnessctl
             ;;
         fedora)
             echo -e "${YELLOW}Installing packages (Fedora)...${NC}"
@@ -161,7 +166,9 @@ install_dependencies() {
                 fontconfig \
                 pulseaudio \
                 pulseaudio-utils \
-                rofi
+                rofi \
+                dunst \
+                brightnessctl
             
             # Try to install clipmenu (may not be in all repositories)
             if sudo dnf install -y clipmenu 2>/dev/null; then
@@ -175,7 +182,7 @@ install_dependencies() {
         *)
             echo -e "${RED}Unsupported distribution: $DISTRO${NC}"
             echo -e "${YELLOW}Please install dependencies manually.${NC}"
-            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty, pulseaudio, rofi${NC}"
+            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty, pulseaudio, rofi, dunst, brightnessctl${NC}"
             exit 1
             ;;
     esac
@@ -184,7 +191,7 @@ install_dependencies() {
 
 # Function to install Oh My Zsh
 install_ohmyzsh() {
-    echo -e "${YELLOW}[3/10] Installing Oh My Zsh...${NC}"
+    echo -e "${YELLOW}[3/11] Installing Oh My Zsh...${NC}"
     if [ ! -d "$HOME_DIR/.oh-my-zsh" ]; then
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
         echo -e "${GREEN}✓ Oh My Zsh installed!${NC}\n"
@@ -195,7 +202,7 @@ install_ohmyzsh() {
 
 # Function to install Zsh plugins
 install_zsh_plugins() {
-    echo -e "${YELLOW}[4/10] Installing Zsh plugins...${NC}"
+    echo -e "${YELLOW}[4/11] Installing Zsh plugins...${NC}"
     ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME_DIR/.oh-my-zsh/custom}"
     
     # zsh-autosuggestions
@@ -215,7 +222,7 @@ install_zsh_plugins() {
 
 # Function to install Python dependencies
 install_python_deps() {
-    echo -e "${YELLOW}[5/10] Installing Python dependencies...${NC}"
+    echo -e "${YELLOW}[5/11] Installing Python dependencies...${NC}"
     pip3 install --user --quiet colorthief 2>/dev/null || {
         echo -e "${YELLOW}Warning: Could not install colorthief via pip.${NC}"
         echo -e "${YELLOW}Try manually: pip3 install --user colorthief${NC}"
@@ -225,18 +232,19 @@ install_python_deps() {
 
 # Function to create directories
 create_directories() {
-    echo -e "${YELLOW}[6/10] Creating configuration directories...${NC}"
+    echo -e "${YELLOW}[6/11] Creating configuration directories...${NC}"
     mkdir -p "$HOME_DIR/.config/i3/scripts"
     mkdir -p "$HOME_DIR/.config/polybar/modules"
     mkdir -p "$HOME_DIR/.config/picom"
     mkdir -p "$HOME_DIR/.config/kitty"
     mkdir -p "$HOME_DIR/.config/wallpaper"
+    mkdir -p "$HOME_DIR/.config/dunst"
     echo -e "${GREEN}✓ Directories created!${NC}\n"
 }
 
 # Function to create symlinks
 create_symlinks() {
-    echo -e "${YELLOW}[7/10] Creating symbolic links...${NC}"
+    echo -e "${YELLOW}[7/11] Creating symbolic links...${NC}"
     
     # i3 configuration files
     ln -sf "$DOTFILES_DIR/i3/config" "$HOME_DIR/.config/i3/config"
@@ -254,6 +262,9 @@ create_symlinks() {
     
     # kitty
     ln -sf "$DOTFILES_DIR/kitty/kitty.conf" "$HOME_DIR/.config/kitty/kitty.conf"
+    
+    # dunst
+    ln -sf "$DOTFILES_DIR/dunst/dunstrc.conf" "$HOME_DIR/.config/dunst/dunstrc.conf"
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"
@@ -276,7 +287,7 @@ create_symlinks() {
 
 # Function to fix hardcoded paths
 fix_hardcoded_paths() {
-    echo -e "${YELLOW}[8/10] Fixing hardcoded paths...${NC}"
+    echo -e "${YELLOW}[8/11] Fixing hardcoded paths...${NC}"
     
     # Fix paths in polybar config if needed
     if [ -f "$HOME_DIR/.config/polybar/config.ini" ]; then
@@ -291,7 +302,7 @@ fix_hardcoded_paths() {
 
 # Function to make scripts executable
 make_executable() {
-    echo -e "${YELLOW}[9/10] Setting executable permissions...${NC}"
+    echo -e "${YELLOW}[9/11] Setting executable permissions...${NC}"
     chmod +x "$HOME_DIR/.config/polybar/launch.sh" 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/polybar/modules/"*.sh 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/polybar/modules/"*.py 2>/dev/null || true
@@ -299,9 +310,32 @@ make_executable() {
     echo -e "${GREEN}✓ Permissions set!${NC}\n"
 }
 
+# Function to configure system settings
+configure_system() {
+    echo -e "${YELLOW}[11/11] Configuring system settings...${NC}"
+    
+    # Set primary monitor
+    if command_exists xrandr; then
+        xrandr --output DP-1 --primary 2>/dev/null || {
+            echo -e "${YELLOW}⚠ Could not set DP-1 as primary monitor${NC}"
+            echo -e "${YELLOW}  Run manually: xrandr --output DP-1 --primary${NC}"
+        }
+    fi
+    
+    # Configure keyboard layout (pt-br)
+    if command_exists setxkbmap; then
+        setxkbmap br 2>/dev/null || {
+            echo -e "${YELLOW}⚠ Could not set keyboard layout to pt-br${NC}"
+            echo -e "${YELLOW}  Run manually: setxkbmap br${NC}"
+        }
+    fi
+    
+    echo -e "${GREEN}✓ System settings configured!${NC}\n"
+}
+
 # Function to install fonts
 install_fonts() {
-    echo -e "${YELLOW}[10/10] Installing Nerd Fonts (JetBrainsMono, FiraCode, VictorMono)...${NC}"
+    echo -e "${YELLOW}[10/11] Installing Nerd Fonts (JetBrainsMono, FiraCode, VictorMono)...${NC}"
     DISTRO=$(detect_distro)
     FONT_DIR="$HOME_DIR/.local/share/fonts"
     mkdir -p "$FONT_DIR"
@@ -430,6 +464,9 @@ main() {
     # Install fonts
     install_fonts
     
+    # Configure system settings
+    configure_system
+    
     # Change shell to zsh if not already
     if [ "$SHELL" != "$(which zsh)" ]; then
         echo -e "${YELLOW}Changing default shell to zsh...${NC}"
@@ -453,6 +490,9 @@ main() {
     echo -e "  • Mod+V: Clipboard menu (clipmenu)"
     echo -e "  • Mod+Return: Terminal"
     echo -e "  • Mod+D: Application launcher (dmenu)"
+    echo -e "\n${YELLOW}System configuration:${NC}"
+    echo -e "  • Primary monitor: DP-1 (configured)"
+    echo -e "  • Keyboard layout: pt-br (configured)"
     echo -e "\n${YELLOW}Backup saved at: $BACKUP_DIR${NC}\n"
 }
 
