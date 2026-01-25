@@ -122,7 +122,7 @@ def get_device_name(sink):
         return "Headphones"
     
     if "pci" in sink.lower() or "sofhdadsp" in sink.lower() or "platform" in sink.lower():
-        return "Speakers"
+        return "Speakers: " + sink
     
     name = sink.replace("alsa_output.", "").split(".")[0]
     name = name.replace("_", " ").replace("-", " ")
@@ -159,8 +159,11 @@ def display_volume():
                 icon = "󰕿"
             elif vol < 70:
                 icon = "󰖀"
-            else:
+            elif vol <= 100:
                 icon = "󰕾"
+            else:
+                light_red = "#E06C75"
+                icon = f"%{{F{light_red}}}󰕾%{{F-}}"
             
             print(f"{icon} {vol}%")
     except Exception:
