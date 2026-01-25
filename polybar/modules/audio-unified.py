@@ -122,7 +122,13 @@ def get_device_name(sink):
         return "Headphones"
     
     if "pci" in sink.lower() or "sofhdadsp" in sink.lower() or "platform" in sink.lower():
-        return "Speakers: " + sink
+        formated_sink = sink.split(".")[3].split("sp_")[1].replace("__", " ").replace("_", " ")
+        if formated_sink == " sink":
+            return "Speakers: Notebook"
+        elif formated_sink == "4 sink":
+            return "Speakers: Secondary monitor"
+        else:
+            return "Speakers: " + formated_sink
     
     name = sink.replace("alsa_output.", "").split(".")[0]
     name = name.replace("_", " ").replace("-", " ")
@@ -201,7 +207,7 @@ def display_menu():
         
         # Show rofi menu
         result = subprocess.run(
-            ['rofi', '-dmenu', '-i', '-p', 'Audio Device', '-theme-str', 'window {width: 400px;}'],
+            ['rofi', '-dmenu', '-i', '-p', 'Audio Device', '-theme-str', 'window {width: 1000px;}'],
             input="\n".join(menu_items),
             text=True,
             capture_output=True,
