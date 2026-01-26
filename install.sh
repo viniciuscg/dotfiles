@@ -117,6 +117,8 @@ install_dependencies() {
                 network-manager-applet \
                 dmenu \
                 xorg-xrandr \
+                xorg-xset \
+                xorg-xkb-utils \
                 acpi \
                 jq \
                 python-dbus \
@@ -151,6 +153,8 @@ install_dependencies() {
                 NetworkManager-applet \
                 dmenu \
                 xorg-xrandr \
+                xorg-xset \
+                xorg-xkb-utils \
                 acpi \
                 jq \
                 python3-dbus \
