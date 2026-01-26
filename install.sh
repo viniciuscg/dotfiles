@@ -264,7 +264,7 @@ create_symlinks() {
     ln -sf "$DOTFILES_DIR/kitty/kitty.conf" "$HOME_DIR/.config/kitty/kitty.conf"
     
     # dunst
-    ln -sf "$DOTFILES_DIR/dunst/dunstrc.conf" "$HOME_DIR/.config/dunst/dunstrc.conf"
+    ln -sf "$DOTFILES_DIR/dunst/dunstrc" "$HOME_DIR/.config/dunst/dunstrc"
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"
