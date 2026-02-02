@@ -239,6 +239,7 @@ create_directories() {
     mkdir -p "$HOME_DIR/.config/kitty"
     mkdir -p "$HOME_DIR/.config/wallpaper"
     mkdir -p "$HOME_DIR/.config/dunst"
+    mkdir -p "$HOME_DIR/.config/rofi"
     echo -e "${GREEN}✓ Directories created!${NC}\n"
 }
 
@@ -264,7 +265,10 @@ create_symlinks() {
     ln -sf "$DOTFILES_DIR/kitty/kitty.conf" "$HOME_DIR/.config/kitty/kitty.conf"
     
     # dunst
-    ln -sf "$DOTFILES_DIR/dunst/dunstrc.conf" "$HOME_DIR/.config/dunst/dunstrc.conf"
+    ln -sf "$DOTFILES_DIR/dunst/dunstrc" "$HOME_DIR/.config/dunst/dunstrc"
+    
+    # rofi
+    ln -sf "$DOTFILES_DIR/rofi/config.rasi" "$HOME_DIR/.config/rofi/config.rasi"
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"

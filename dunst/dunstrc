@@ -27,7 +27,7 @@
     sort = yes
     idle_threshold = 120
     
-    font = Source Sans Pro 10
+    font = FiraCode Nerd Font 10
     line_height = 2
     markup = full
     format = "<span weight='600' foreground='#e8e8e8'>%s</span>\n<span size='95%' foreground='#a8a8a8'>%b</span>"
