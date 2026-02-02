@@ -1,0 +1,115 @@
+/**
+ * Rofi Config - Minimal & Clean
+ */
+
+configuration {
+    modi: "drun,run,window";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    display-drun: "Applications";
+    display-run: "Run";
+    display-window: "Windows";
+    drun-display-format: "{name}";
+    font: "FiraCode Nerd Font 10";
+}
+
+* {
+    bg: #1E1E1E;
+    bg-alt: #252525;
+    bg-selected: #2D2D2D;
+    fg: #FFFFFF;
+    fg-alt: #858585;
+    border: #3A3A3A;
+    
+    background-color: transparent;
+    text-color: @fg;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    border: 1px solid;
+    border-color: @border;
+    width: 600px;
+    location: center;
+    padding: 0;
+}
+
+mainbox {
+    children: [inputbar, listview];
+    background-color: @bg;
+    spacing: 0;
+}
+
+inputbar {
+    background-color: @bg-alt;
+    padding: 15px;
+    children: [prompt, entry];
+    spacing: 10px;
+    border-bottom: 1px solid;
+    border-color: @border;
+}
+
+prompt {
+    text-color: @fg;
+}
+
+entry {
+    placeholder: "Search";
+    placeholder-color: @fg-alt;
+    cursor: text;
+    text-color: @fg;
+}
+
+listview {
+    lines: 8;
+    columns: 1;
+    fixed-height: false;
+    dynamic: true;
+    scrollbar: false;
+    spacing: 0;
+    cycle: true;
+    padding: 5px 0;
+}
+
+element {
+    padding: 12px 15px;
+    spacing: 10px;
+    orientation: horizontal;
+    children: [element-icon, element-text];
+    text-color: @fg;
+    background-color: @bg;
+}
+
+element selected {
+    background-color: @bg-selected;
+    text-color: @fg;
+}
+
+element-icon {
+    size: 20px;
+    vertical-align: 0.5;
+}
+
+element-text {
+    vertical-align: 0.5;
+    text-color: inherit;
+}
+
+scrollbar {
+    handle-width: 4px;
+    handle-color: @fg-alt;
+    background-color: @bg;
+}
+
+message {
+    background-color: @bg-alt;
+    border: 1px solid;
+    border-color: @border;
+    padding: 10px;
+}
+
+textbox {
+    text-color: @fg;
+}
