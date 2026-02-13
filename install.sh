@@ -91,6 +91,7 @@ install_dependencies() {
                 fontconfig \
                 pulseaudio \
                 pulseaudio-utils \
+                pavucontrol \
                 rofi \
                 dunst \
                 brightnessctl
@@ -136,6 +137,7 @@ install_dependencies() {
                 fontconfig \
                 pulseaudio \
                 pulseaudio-alsa \
+                pavucontrol \
                 rofi \
                 dunst \
                 brightnessctl
@@ -170,6 +172,7 @@ install_dependencies() {
                 fontconfig \
                 pulseaudio \
                 pulseaudio-utils \
+                pavucontrol \
                 rofi \
                 dunst \
                 brightnessctl
@@ -186,7 +189,7 @@ install_dependencies() {
         *)
             echo -e "${RED}Unsupported distribution: $DISTRO${NC}"
             echo -e "${YELLOW}Please install dependencies manually.${NC}"
-            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty, pulseaudio, rofi, dunst, brightnessctl${NC}"
+            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty, pulseaudio, pavucontrol, rofi, dunst, brightnessctl${NC}"
             exit 1
             ;;
     esac
@@ -277,16 +280,18 @@ create_symlinks() {
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"
     
-    # wallpaper
+    # wallpapers - copy all wallpapers
+    echo -e "${BLUE}Copying wallpapers...${NC}"
+    cp -r "$DOTFILES_DIR/wallpaper/"* "$HOME_DIR/.config/wallpaper/" 2>/dev/null || true
+    
+    # Set default wallpaper
     if [ -f "$DOTFILES_DIR/wallpaper/wallpaper.jpg" ]; then
-        ln -sf "$DOTFILES_DIR/wallpaper/wallpaper.jpg" "$HOME_DIR/.config/wallpaper/wallpaper.jpg"
-    elif [ -f "$DOTFILES_DIR/wallpaper/wallpaper.png" ]; then
-        ln -sf "$DOTFILES_DIR/wallpaper/wallpaper.png" "$HOME_DIR/.config/wallpaper/wallpaper.jpg"
+        ln -sf "$HOME_DIR/.config/wallpaper/wallpaper.jpg" "$HOME_DIR/.config/wallpaper/current_wallpaper.jpg"
     else
         # Try to find any image file in wallpaper directory
-        WALLPAPER_FILE=$(find "$DOTFILES_DIR/wallpaper" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" \) 2>/dev/null | head -1)
+        WALLPAPER_FILE=$(find "$HOME_DIR/.config/wallpaper" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" \) 2>/dev/null | head -1)
         if [ -n "$WALLPAPER_FILE" ]; then
-            ln -sf "$WALLPAPER_FILE" "$HOME_DIR/.config/wallpaper/wallpaper.jpg"
+            ln -sf "$WALLPAPER_FILE" "$HOME_DIR/.config/wallpaper/current_wallpaper.jpg"
         fi
     fi
     
@@ -491,16 +496,19 @@ main() {
     echo -e "${YELLOW}Next steps:${NC}"
     echo -e "  1. Logout and login again (or restart i3: Mod+Shift+R)"
     echo -e "  2. Configure your monitors in i3/config and workspaces.conf if needed"
-    echo -e "  3. Place your wallpaper in: $DOTFILES_DIR/wallpaper/wallpaper.jpg"
+    echo -e "  3. All wallpapers copied to ~/.config/wallpaper/"
     echo -e "\n${YELLOW}Useful shortcuts:${NC}"
     echo -e "  • Print: Full screenshot"
     echo -e "  • Mod+Print: Interactive screenshot (flameshot)"
     echo -e "  • Mod+V: Clipboard menu (clipmenu)"
     echo -e "  • Mod+Return: Terminal"
-    echo -e "  • Mod+D: Application launcher (dmenu)"
+    echo -e "  • Mod+D: Application launcher (rofi)"
+    echo -e "  • Super+D: Rofi launcher (same as Mod+D)"
     echo -e "\n${YELLOW}System configuration:${NC}"
     echo -e "  • Primary monitor: DP-1 (configured)"
     echo -e "  • Keyboard layout: pt-br (configured)"
+    echo -e "  • Rofi theme: Clean minimal dark"
+    echo -e "  • All wallpapers installed"
     echo -e "\n${YELLOW}Backup saved at: $BACKUP_DIR${NC}\n"
 }
 
