@@ -333,6 +333,12 @@ configure_system() {
             echo -e "${YELLOW}⚠ Could not set DP-1 as primary monitor${NC}"
             echo -e "${YELLOW}  Run manually: xrandr --output DP-1 --primary${NC}"
         }
+        
+        # Rotate DP-1-6 monitor (inverted)
+        xrandr --output DP-1-6 --rotate inverted 2>/dev/null || {
+            echo -e "${YELLOW}⚠ Could not rotate DP-1-6 monitor${NC}"
+            echo -e "${YELLOW}  Run manually: xrandr --output DP-1-6 --rotate inverted${NC}"
+        }
     fi
     
     # Configure keyboard layout (pt-br)
@@ -506,6 +512,7 @@ main() {
     echo -e "  • Super+D: Rofi launcher (same as Mod+D)"
     echo -e "\n${YELLOW}System configuration:${NC}"
     echo -e "  • Primary monitor: DP-1 (configured)"
+    echo -e "  • Monitor DP-1-6: Rotated inverted"
     echo -e "  • Keyboard layout: pt-br (configured)"
     echo -e "  • Rofi theme: Clean minimal dark"
     echo -e "  • All wallpapers installed"
