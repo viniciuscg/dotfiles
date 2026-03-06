@@ -29,7 +29,7 @@ cd ~/dotfiles
 chmod +x install.sh
 ./install.sh
 ```
-
+""
 The installation script will:
 - Backup existing configurations
 - Install all system dependencies
