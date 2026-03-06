@@ -9,7 +9,7 @@ A clean, minimal, and productive Linux desktop configuration using i3 window man
 
 ### Development Workspace
 ![Development Workspace](example/dev.png)
-
+:::
 ### Auxiliary Workspace
 ![Auxiliary Workspace](example/aux.png)
 
