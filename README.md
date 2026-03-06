@@ -1,5 +1,5 @@
 # Dotfiles - Minimalist Linux Environment
-
+:"
 A clean, minimal, and productive Linux desktop configuration using i3 window manager, Polybar, Kitty terminal, and Zsh.
 
 ## Screenshots
