@@ -71,7 +71,7 @@ def save_state(index, wallpaper_path):
 
 def set_wallpaper(wallpaper_path):
     """Set wallpaper using feh"""
-    subprocess.run(['feh', '--bg-scale', wallpaper_path], 
+    subprocess.run(['feh', '--bg-fill', wallpaper_path], 
                    stdout=subprocess.DEVNULL, 
                    stderr=subprocess.DEVNULL)
 
