@@ -52,6 +52,7 @@ backup_existing() {
     [ -d "$HOME_DIR/.config/picom" ] && cp -r "$HOME_DIR/.config/picom" "$BACKUP_DIR/picom.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/kitty" ] && cp -r "$HOME_DIR/.config/kitty" "$BACKUP_DIR/kitty.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/dunst" ] && cp -r "$HOME_DIR/.config/dunst" "$BACKUP_DIR/dunst.bak" 2>/dev/null || true
+    [ -f "$HOME_DIR/.config/Code/User/vscode-custom.css" ] && cp "$HOME_DIR/.config/Code/User/vscode-custom.css" "$BACKUP_DIR/vscode-custom.css.bak" 2>/dev/null || true
     
     echo -e "${GREEN}✓ Backup created at: $BACKUP_DIR${NC}\n"
 }
@@ -247,6 +248,7 @@ create_directories() {
     mkdir -p "$HOME_DIR/.config/wallpaper"
     mkdir -p "$HOME_DIR/.config/dunst"
     mkdir -p "$HOME_DIR/.config/rofi"
+    mkdir -p "$HOME_DIR/.config/Code/User"
     echo -e "${GREEN}✓ Directories created!${NC}\n"
 }
 
@@ -276,6 +278,9 @@ create_symlinks() {
     
     # rofi
     ln -sf "$DOTFILES_DIR/rofi/config.rasi" "$HOME_DIR/.config/rofi/config.rasi"
+    
+    # vscode
+    ln -sf "$DOTFILES_DIR/vscode/vscode-custom.css" "$HOME_DIR/.config/Code/User/vscode-custom.css"
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"

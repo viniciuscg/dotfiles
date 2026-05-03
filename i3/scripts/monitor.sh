@@ -25,15 +25,15 @@ if [ -n "$PRIMARY" ] && [ "$PRIMARY" != "$PORTRAIT_MONITOR" ] && xrandr | grep -
   ')"
 
   if [ -n "$PORTRAIT_MODE" ]; then
-    xrandr --output "$PORTRAIT_MONITOR" --mode "$PORTRAIT_MODE" --rotate right --left-of "$PRIMARY" --scale 1x1
+    xrandr --output "$PORTRAIT_MONITOR" --mode "$PORTRAIT_MODE" --rotate normal --right-of "$PRIMARY" --scale 1x1
   else
-    xrandr --output "$PORTRAIT_MONITOR" --auto --rotate right --left-of "$PRIMARY" --scale 1x1
+    xrandr --output "$PORTRAIT_MONITOR" --auto --rotate normal --right-of "$PRIMARY" --scale 1x1
   fi
 fi
 
 # Avoid output overlap: keep laptop panel to the right of the primary monitor.
 if [ -n "$PRIMARY" ] && [ "$PRIMARY" != "$LAPTOP_MONITOR" ] && xrandr | grep -q "^${LAPTOP_MONITOR} connected"; then
-  xrandr --output "$LAPTOP_MONITOR" --auto --rotate normal --right-of "$PRIMARY"
+  xrandr --output "$LAPTOP_MONITOR" --auto --rotate normal --left-of "$PRIMARY"
 fi
 
 # Reapply wallpaper after layout changes to avoid stretched/misaligned backgrounds.
