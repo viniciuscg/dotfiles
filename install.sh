@@ -96,7 +96,8 @@ install_dependencies() {
                 pavucontrol \
                 rofi \
                 dunst \
-                brightnessctl
+                brightnessctl \
+                playerctl
             
             # Try to install clipmenu (may not be in all repositories)
             if sudo apt install -y clipmenu 2>/dev/null; then
@@ -142,7 +143,8 @@ install_dependencies() {
                 pavucontrol \
                 rofi \
                 dunst \
-                brightnessctl
+                brightnessctl \
+                playerctl
             ;;
         fedora)
             echo -e "${YELLOW}Installing packages (Fedora)...${NC}"
@@ -177,7 +179,8 @@ install_dependencies() {
                 pavucontrol \
                 rofi \
                 dunst \
-                brightnessctl
+                brightnessctl \
+                playerctl
             
             # Try to install clipmenu (may not be in all repositories)
             if sudo dnf install -y clipmenu 2>/dev/null; then
