@@ -1,0 +1,60 @@
+* {
+    background-color: #1a1a1a;
+    text-color:       #cccccc;
+    font:             "JetBrainsMono Nerd Font 10";
+}
+
+configuration {
+    show-icons: false;
+}
+
+window {
+    width:            180px;
+    background-color: #1a1a1a;
+    border:           1px;
+    border-color:     #e8e8e8;
+    border-radius:    8px;
+    location:         northeast;
+    x-offset:         -20;
+    y-offset:         45;
+}
+
+mainbox {
+    padding:          4px;
+    background-color: #1a1a1a;
+    children:         [ listview ];
+}
+
+listview {
+    lines:            4;
+    scrollbar:        false;
+    background-color: #1a1a1a;
+    spacing:          2px;
+}
+
+element {
+    padding:          8px 12px;
+    border-radius:    6px;
+    background-color: #1a1a1a;
+    cursor:           pointer;
+}
+
+element normal.normal {
+    background-color: #1a1a1a;
+    text-color:       #cccccc;
+}
+
+element hover {
+    background-color: #2a2a2a;
+    text-color:       #e8e8e8;
+}
+
+element selected.normal {
+    background-color: #2a2a2a;
+    text-color:       #e8e8e8;
+}
+
+element-text {
+    text-color:       inherit;
+    background-color: inherit;
+}

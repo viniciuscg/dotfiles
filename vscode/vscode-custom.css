@@ -1,125 +1,129 @@
 /* ================================================
-   VSCODE CUSTOM CSS — MINIMAL DARK
+   VS Code — mesmo stack visual da polybar (#1a1a1a / #e8e8e8)
+   Extensão: "Custom CSS and JS Loader"
+   Se ao ativar der permission denied: ./vscode/fix-custom-css-perms.sh
+   (pacote .deb; Snap/Flatpak não suportam bem este loader)
+   Depois: Command Palette → "Enable Custom CSS and JS" e reiniciar.
    ================================================ */
 
-/* Scroll shadow */
 .monaco-editor .scroll-decoration {
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.75) !important;
-    top: -6px !important;
+    box-shadow: none !important;
 }
 
-/* Sidebar shadow */
 .part.sidebar {
-    box-shadow: 0px 0px 50px rgba(0, 0, 0, 0.25);
+    box-shadow: none !important;
 }
 
-/* Explorer file labels */
-.monaco-tree .monaco-tree-row .label-name,
-.monaco-list .monaco-list-row .monaco-icon-label .label-name,
-.label-name {
-    font-family: "JetBrainsMono Nerd Font" !important;
-    font-size: 12px !important;
+.monaco-scrollable-element > .shadow.top {
+    box-shadow: none !important;
 }
 
-/* Sidebar top shadow */
-.monaco-scrollable-element>.shadow.top {
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.75) !important;
-    top: -3px !important;
-}
-
-/* Sidebar title */
-.composite.title {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-}
-
-.composite.title h2 {
-    font-weight: bold !important;
-    font-size: 12px !important;
-    text-transform: uppercase;
-}
-
-/* Scrollbars */
+/* Scrollbars discretos */
 .scrollbar.vertical .slider {
-    position: absolute !important;
-    right: 5px !important;
-    width: 4px !important;
-    background: #343a51 !important;
-    left: auto !important;
-    border-radius: 3px;
+    right: 4px !important;
+    width: 6px !important;
+    background: #3a3a3a !important;
+    border-radius: 4px !important;
 }
 
 .scrollbar.horizontal .slider {
-    position: absolute !important;
-    bottom: 5px !important;
-    height: 4px !important;
-    background: #343a51 !important;
-    top: auto !important;
-    border-radius: 3px;
+    bottom: 4px !important;
+    height: 6px !important;
+    background: #3a3a3a !important;
+    border-radius: 4px !important;
 }
 
-/* Hide scrollbar overview ruler */
 .decorationsOverviewRuler {
     display: none !important;
 }
 
-/* Centered command palette */
-.quick-input-widget {
-    transform: translateY(-50%) !important;
-    top: 50% !important;
-    z-index: 100;
-    border: solid 1px #ffffff18 !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
+/* Explorer / listas — JetBrains como terminal */
+.monaco-tree .monaco-tree-row .label-name,
+.monaco-list .monaco-list-row .monaco-icon-label .label-name,
+.quick-open-tree .label-name {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace !important;
+    font-size: 13px !important;
 }
 
-/* Hide watermark */
+/* Sidebar título baixo perfil */
+.composite.title {
+    padding: 6px 10px !important;
+}
+
+.composite.title h2 {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    opacity: 0.85 !important;
+}
+
+/* Command palette — cartão simples */
+.quick-input-widget {
+    transform: translateY(-48%) !important;
+    top: 42% !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 10px !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45) !important;
+}
+
 .watermark-box {
     display: none !important;
 }
 
-/* Fonts */
-.search-label,
-.statusbar,
-.label-name {
-    font-family: "JetBrainsMono Nerd Font" !important;
+.monaco-workbench .part.titlebar .window-title {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace !important;
+    font-size: 11px !important;
+    letter-spacing: 0.05em !important;
+    opacity: 0.55 !important;
 }
 
-/* ================================================
-   TITLEBAR — MINIMAL
-   ================================================ */
+/* Ícone da app — neutro (sem imagem externa) */
+.monaco-workbench .part.titlebar .window-appicon,
+.monaco-workbench .titlebar-left .window-appicon {
+    opacity: 0.35 !important;
+    filter: grayscale(1) brightness(1.2) !important;
+}
 
-/* Hide native window controls clutter on the right */
-.monaco-workbench .part.titlebar .titlebar-right .window-controls-container,
-.monaco-workbench .part.titlebar .titlebar-right .layout-controls-container,
-.monaco-workbench .part.titlebar .titlebar-right .chat-entry-point,
-.monaco-workbench .part.titlebar .titlebar-right .codicon-layout,
-.monaco-workbench .part.titlebar .action-item {
+/* Barra de título à direita: só minimizar / maximizar / fechar */
+.monaco-workbench .part.titlebar .titlebar-right > :not(.window-controls-container) {
     display: none !important;
 }
 
-/* Keep only window min/max/close buttons */
 .monaco-workbench .part.titlebar .titlebar-right .window-controls-container {
     display: flex !important;
 }
 
-/* Custom app icon — Star Wars Rebel */
-.monaco-workbench .part.titlebar .window-appicon,
-.monaco-workbench .titlebar-left .window-appicon {
-    background-image: url("https://static.wikia.nocookie.net/starwars/images/7/71/Redstarbird.svg/revision/latest?cb=20080228205026") !important;
-    background-size: 14px !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    display: block !important;
-    filter: brightness(0) !important;
-    opacity: 0.35 !important;
+/* Secção “Open Editors” — só árvore de ficheiros + editor */
+.explorer-open-editors {
+    display: none !important;
 }
 
-/* Titlebar title text — subtle */
-.monaco-workbench .part.titlebar .window-title {
-    font-family: "JetBrainsMono Nerd Font" !important;
-    font-size: 11px !important;
-    opacity: 0.4 !important;
-    letter-spacing: 0.04em;
+/* Barra de título + editor = uma só superfície (sem linha / sem salto de cor) */
+.monaco-workbench .part.titlebar {
+    background-color: #1a1a1a !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+
+.monaco-workbench .part.editor {
+    border-top: none !important;
+}
+
+.monaco-workbench .part.editor > .content {
+    background-color: #1a1a1a !important;
+}
+
+.monaco-workbench .monaco-editor-background {
+    background-color: #1a1a1a !important;
+}
+
+.monaco-workbench .editor-group-container {
+    border-top: none !important;
+    box-shadow: none !important;
+}
+
+.monaco-workbench .editor-group-watermark {
+    border-top: none !important;
 }

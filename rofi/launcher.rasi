@@ -1,0 +1,75 @@
+* {
+    background-color: #1a1a1a;
+    text-color:       #cccccc;
+    font:             "JetBrainsMono Nerd Font 10";
+}
+
+configuration {
+    show-icons:        true;
+    icon-theme:        "Papirus-Dark";
+    display-drun:      " Apps";
+}
+
+window {
+    width:            380px;
+    background-color: #1a1a1a;
+    border:           1px;
+    border-color:     #2a2a2a;
+    border-radius:    12px;
+    location:         center;
+}
+
+mainbox {
+    padding:          8px;
+    background-color: #1a1a1a;
+}
+
+inputbar {
+    background-color: #222222;
+    border-radius:    8px;
+    padding:          8px 12px;
+    margin:           0px 0px 8px 0px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       #e8e8e8;
+    padding:          0px 6px 0px 0px;
+}
+
+entry {
+    text-color:       #cccccc;
+    placeholder:      "Search...";
+    placeholder-color: #555555;
+}
+
+listview {
+    lines:            7;
+    scrollbar:        false;
+    background-color: #1a1a1a;
+    spacing:          2px;
+}
+
+element {
+    padding:          8px 10px;
+    border-radius:    6px;
+    background-color: #1a1a1a;
+}
+
+element selected {
+    background-color: #2a2a2a;
+}
+
+element-text {
+    text-color:       #cccccc;
+    background-color: inherit;
+}
+
+element selected element-text {
+    text-color: #e8e8e8;
+}
+
+element-icon {
+    size:             18px;
+    background-color: inherit;
+}
