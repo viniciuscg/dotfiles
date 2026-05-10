@@ -1,34 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
+killall -q polybar 2>/dev/null || true
+while pgrep -u "$(id -u)" -x polybar >/dev/null; do sleep 0.2; done
 
-killall -q polybar
+CFG="${HOME}/.config/polybar/config.ini"
+[[ -f "$CFG" ]] || { echo "polybar: falta $CFG"; exit 1; }
 
-CONFIG_FILE="$HOME/dotfiles/polybar/config.ini"
-if [ ! -f "$CONFIG_FILE" ]; then
-  CONFIG_FILE="$HOME/.config/polybar/config.ini"
-fi
+run_bar() {
+  MONITOR="${1:-}" polybar -c "$CFG" main &
+}
 
-if type "xrandr"; then
-  for m in $(xrandr --query | grep " connected" | cut -d" " -f1); do
-    if [ "$m" = "DP-1-5" ]; then
-      # Monitor 4K principal - barras maiores
-      echo "Monitor 4K principal - barras maiores"
-      MONITOR=$m polybar -c "$CONFIG_FILE" --reload top &
-      MONITOR=$m polybar -c "$CONFIG_FILE" --reload bottom &
-    elif [ "$m" = "DP-1-6" ]; then
-      # Monitor vertical - barras menores e centralizadas
-      echo "Monitor vertical (DP-1-6) - barras compactas"
-      MONITOR=$m polybar -c "$CONFIG_FILE" --reload top-vertical &
-      MONITOR=$m polybar -c "$CONFIG_FILE" --reload bottom-vertical &
-    else
-      echo "Monitores menores (eDP-1) - barras menores"
-      MONITOR=$m polybar -c "$CONFIG_FILE" --reload top-small &
-      MONITOR=$m polybar -c "$CONFIG_FILE" --reload bottom-small &
-    fi
-  done
+if command -v xrandr >/dev/null 2>&1; then
+  mapfile -t outs < <(xrandr --query | awk '/ connected/{print $1}')
+  if [[ ${#outs[@]} -eq 0 ]]; then
+    run_bar ""
+  else
+    for m in "${outs[@]}"; do
+      run_bar "$m"
+    done
+  fi
 else
-  echo "Monitor único - barras maiores"
-  polybar -c "$CONFIG_FILE" --reload top &
-  polybar -c "$CONFIG_FILE" --reload bottom &
+  run_bar ""
 fi
-
-echo "Polybar launched..."

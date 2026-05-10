@@ -1,0 +1,84 @@
+/**
+ * Rofi para escolher wallpaper: lista + barra de pesquisa (filtra pastas/nomes).
+ */
+* {
+    background-color: #1a1a1a;
+    text-color:       #cccccc;
+    font:             "JetBrainsMono Nerd Font 10";
+}
+
+configuration {
+    show-icons: false;
+}
+
+window {
+    width:            720px;
+    background-color: #1a1a1a;
+    border:           1px;
+    border-color:     #e8e8e8;
+    border-radius:    10px;
+    location:         center;
+}
+
+mainbox {
+    padding:          10px;
+    background-color: #1a1a1a;
+    spacing:          0px;
+    children:         [ inputbar, listview ];
+}
+
+inputbar {
+    background-color: #222222;
+    border-radius:    8px;
+    padding:          10px 14px;
+    margin:           0px 0px 10px 0px;
+    spacing:          8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color:       #e8e8e8;
+    padding:          0px 4px 0px 0px;
+}
+
+entry {
+    text-color:           #e8e8e8;
+    placeholder:          "Filtrar por pasta ou nome…";
+    placeholder-color:    #666666;
+    cursor:               text;
+}
+
+listview {
+    lines:            18;
+    scrollbar:        true;
+    background-color: #1a1a1a;
+    spacing:          4px;
+    cycle:            true;
+}
+
+element {
+    padding:          8px 12px;
+    border-radius:    6px;
+    background-color: #1a1a1a;
+    cursor:           pointer;
+}
+
+element normal.normal {
+    background-color: #1a1a1a;
+    text-color:       #cccccc;
+}
+
+element hover {
+    background-color: #2a2a2a;
+    text-color:       #e8e8e8;
+}
+
+element selected.normal {
+    background-color: #2a2a2a;
+    text-color:       #e8e8e8;
+}
+
+element-text {
+    text-color:       inherit;
+    background-color: inherit;
+}

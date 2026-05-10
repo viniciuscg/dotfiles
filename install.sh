@@ -53,6 +53,7 @@ backup_existing() {
     [ -d "$HOME_DIR/.config/kitty" ] && cp -r "$HOME_DIR/.config/kitty" "$BACKUP_DIR/kitty.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/dunst" ] && cp -r "$HOME_DIR/.config/dunst" "$BACKUP_DIR/dunst.bak" 2>/dev/null || true
     [ -f "$HOME_DIR/.config/Code/User/vscode-custom.css" ] && cp "$HOME_DIR/.config/Code/User/vscode-custom.css" "$BACKUP_DIR/vscode-custom.css.bak" 2>/dev/null || true
+    [ -f "$HOME_DIR/.config/Code/User/settings.json" ] && cp "$HOME_DIR/.config/Code/User/settings.json" "$BACKUP_DIR/vscode-settings.json.bak" 2>/dev/null || true
     
     echo -e "${GREEN}✓ Backup created at: $BACKUP_DIR${NC}\n"
 }
@@ -241,15 +242,94 @@ install_python_deps() {
 # Function to create directories
 create_directories() {
     echo -e "${YELLOW}[6/11] Creating configuration directories...${NC}"
+    # Symlinks em ~/.config/i3 ou ~/.config/polybar (ex.: repo estilo chupre) impedem mkdir -p.
+    local cfg_subdir
+    for cfg_subdir in i3 polybar picom kitty wallpaper dunst rofi Code; do
+        local p="${HOME_DIR}/.config/${cfg_subdir}"
+        if [[ -L "$p" ]]; then
+            echo -e "${YELLOW}  • Removendo symlink antigo: $p${NC}"
+            rm -f "$p"
+        fi
+    done
     mkdir -p "$HOME_DIR/.config/i3/scripts"
     mkdir -p "$HOME_DIR/.config/polybar/modules"
     mkdir -p "$HOME_DIR/.config/picom"
     mkdir -p "$HOME_DIR/.config/kitty"
     mkdir -p "$HOME_DIR/.config/wallpaper"
+    mkdir -p "$HOME_DIR/.local/share/walls"
     mkdir -p "$HOME_DIR/.config/dunst"
     mkdir -p "$HOME_DIR/.config/rofi"
     mkdir -p "$HOME_DIR/.config/Code/User"
     echo -e "${GREEN}✓ Directories created!${NC}\n"
+}
+
+optional_clone_dharmx_walls() {
+    local dest="${HOME_DIR}/.local/share/walls"
+    if [[ -e "${dest}/.git" ]] || [[ -d "${dest}/.git" ]]; then
+        echo -e "${GREEN}✓ dharmx/walls já existe em ${dest}${NC}\n"
+        return 0
+    fi
+
+    local do_clone=0
+    if [[ "${INSTALL_DHARMX_WALLS:-}" == "1" ]]; then
+        do_clone=1
+    elif [[ -t 0 ]] && [[ "${INSTALL_DHARMX_WALLS:-}" != "0" ]]; then
+        echo -ne "${YELLOW}Clonar dharmx/walls para ~/.local/share/walls? (repo grande) [s/N] ${NC}"
+        read -r _wall_ans
+        [[ "${_wall_ans:-}" =~ ^[sSyY]$ ]] && do_clone=1
+    fi
+
+    [[ "$do_clone" -eq 1 ]] || return 0
+
+    if ! command_exists git; then
+        echo -e "${YELLOW}⚠ git não encontrado.${NC}\n"
+        return 0
+    fi
+
+    echo -e "${BLUE}Cloning https://github.com/dharmx/walls.git …${NC}"
+    if git clone --depth 1 https://github.com/dharmx/walls.git "$dest"; then
+        echo -e "${GREEN}✓ dharmx/walls clonado em ${dest}${NC}\n"
+    else
+        echo -e "${YELLOW}⚠ Clone falhou. Manual: git clone https://github.com/dharmx/walls.git ${dest}${NC}\n"
+    fi
+}
+
+install_vscode_user_settings() {
+    local repo="$DOTFILES_DIR/vscode/settings.json"
+    local dest="$HOME_DIR/.config/Code/User/settings.json"
+    [[ -f "$repo" ]] || return 0
+    echo -e "${BLUE}VS Code: ~/.config/Code/User/settings.json (tema polybar + URI do CSS)…${NC}"
+    INSTALL_HOME="$HOME_DIR" INSTALL_DOTFILES="$DOTFILES_DIR" python3 << 'PY'
+import json
+import os
+import re
+from pathlib import Path
+
+home = Path(os.environ["INSTALL_HOME"])
+repo = Path(os.environ["INSTALL_DOTFILES"]) / "vscode" / "settings.json"
+dest = home / ".config/Code/User/settings.json"
+css = home / ".config/Code/User/vscode-custom.css"
+uri = css.resolve().as_uri()
+
+def load_jsonc(path: Path):
+    text = path.read_text(encoding="utf-8")
+    lines = []
+    for line in text.splitlines():
+        if re.match(r"^\s*//", line):
+            continue
+        lines.append(line)
+    text = "\n".join(lines)
+    text = re.sub(r",(\s*[\]}])", r"\1", text)
+    return json.loads(text)
+
+dest.parent.mkdir(parents=True, exist_ok=True)
+data = load_jsonc(repo)
+data["vscode_custom_css.imports"] = [uri]
+dest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+    echo -e "${GREEN}✓ VS Code settings escritos.${NC}"
+    echo -e "${YELLOW}  Extensão: Custom CSS and JS Loader → se «permission denied» ao ativar:${NC}"
+    echo -e "${YELLOW}    ./vscode/fix-custom-css-perms.sh — se VS Code pedir «admin privileges», corre isto (não abras Code como root)${NC}"
 }
 
 # Function to create symlinks
@@ -261,9 +341,15 @@ create_symlinks() {
     ln -sf "$DOTFILES_DIR/i3/"*.conf "$HOME_DIR/.config/i3/" 2>/dev/null || true
     ln -sf "$DOTFILES_DIR/i3/scripts/"*.sh "$HOME_DIR/.config/i3/scripts/" 2>/dev/null || true
     
-    # polybar
+    # polybar (config + launch + scripts na raiz do tema novo + modules/)
     ln -sf "$DOTFILES_DIR/polybar/config.ini" "$HOME_DIR/.config/polybar/config.ini"
     ln -sf "$DOTFILES_DIR/polybar/launch.sh" "$HOME_DIR/.config/polybar/launch.sh"
+    shopt -s nullglob
+    for pb_script in "$DOTFILES_DIR/polybar"/*.sh; do
+        [[ "$(basename "$pb_script")" == "launch.sh" ]] && continue
+        ln -sf "$pb_script" "$HOME_DIR/.config/polybar/$(basename "$pb_script")"
+    done
+    shopt -u nullglob
     ln -sf "$DOTFILES_DIR/polybar/modules/"*.sh "$HOME_DIR/.config/polybar/modules/" 2>/dev/null || true
     ln -sf "$DOTFILES_DIR/polybar/modules/"*.py "$HOME_DIR/.config/polybar/modules/" 2>/dev/null || true
     
@@ -278,9 +364,14 @@ create_symlinks() {
     
     # rofi
     ln -sf "$DOTFILES_DIR/rofi/config.rasi" "$HOME_DIR/.config/rofi/config.rasi"
+    ln -sf "$DOTFILES_DIR/rofi/"*.rasi "$HOME_DIR/.config/rofi/" 2>/dev/null || true
+    ln -sf "$DOTFILES_DIR/rofi/"*.sh "$HOME_DIR/.config/rofi/" 2>/dev/null || true
     
-    # vscode
+    # vscode (CSS + settings.json com tema + URI para Custom CSS Loader)
     ln -sf "$DOTFILES_DIR/vscode/vscode-custom.css" "$HOME_DIR/.config/Code/User/vscode-custom.css"
+    chmod a+r "$DOTFILES_DIR/vscode/vscode-custom.css" 2>/dev/null || true
+    chmod a+r "$HOME_DIR/.config/Code/User/vscode-custom.css" 2>/dev/null || true
+    install_vscode_user_settings
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"
@@ -322,7 +413,9 @@ fix_hardcoded_paths() {
 make_executable() {
     echo -e "${YELLOW}[9/11] Setting executable permissions...${NC}"
     chmod +x "$HOME_DIR/.config/polybar/launch.sh" 2>/dev/null || true
+    chmod +x "$HOME_DIR/.config/polybar/"*.sh 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/polybar/modules/"*.sh 2>/dev/null || true
+    chmod +x "$HOME_DIR/.config/rofi/"*.sh 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/polybar/modules/"*.py 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/i3/scripts/"*.sh 2>/dev/null || true
     echo -e "${GREEN}✓ Permissions set!${NC}\n"
@@ -475,6 +568,8 @@ main() {
     
     # Create directories
     create_directories
+
+    optional_clone_dharmx_walls
     
     # Create symlinks
     create_symlinks
@@ -508,6 +603,7 @@ main() {
     echo -e "  1. Logout and login again (or restart i3: Mod+Shift+R)"
     echo -e "  2. Configure your monitors in i3/config and workspaces.conf if needed"
     echo -e "  3. All wallpapers copied to ~/.config/wallpaper/"
+    echo -e "  4. Wallpapers extras: INSTALL_DHARMX_WALLS=1 ./install.sh (ou clone manual para ~/.local/share/walls)"
     echo -e "\n${YELLOW}Useful shortcuts:${NC}"
     echo -e "  • Print: Full screenshot"
     echo -e "  • Mod+Print: Interactive screenshot (flameshot)"
@@ -520,6 +616,7 @@ main() {
     echo -e "  • Monitor DP-1-6: Rotated inverted"
     echo -e "  • Keyboard layout: pt-br (configured)"
     echo -e "  • Rofi theme: Clean minimal dark"
+    echo -e "  • VS Code: tema tipo terminal + vscode-custom.css (ext. Custom CSS and JS Loader)"
     echo -e "  • All wallpapers installed"
     echo -e "\n${YELLOW}Backup saved at: $BACKUP_DIR${NC}\n"
 }
