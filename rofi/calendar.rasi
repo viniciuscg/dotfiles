@@ -1,0 +1,67 @@
+/**
+ * Calendário — minimal (superfície única, só texto + seleção discreta).
+ */
+* {
+    background-color: #1a1a1a;
+    text-color:       #a0a0a0;
+    font:             "JetBrainsMono Nerd Font 10";
+}
+
+configuration {
+    show-icons: false;
+}
+
+window {
+    /* ≥ largura da grelha: 7×7 chars + margem (senão rofi corta com …) */
+    width:            520px;
+    background-color: #1a1a1a;
+    border:           0px;
+    border-radius:    4px;
+    location:         north;
+    anchor:           north;
+    x-offset:         0px;
+    y-offset:         48px;
+    padding:          0px;
+}
+
+mainbox {
+    padding:          10px 14px;
+    background-color: #1a1a1a;
+    children:         [ listview ];
+}
+
+listview {
+    lines:            14;
+    scrollbar:        false;
+    background-color: #1a1a1a;
+    spacing:          0px;
+    cycle:            true;
+}
+
+element {
+    padding:          3px 2px;
+    border-radius:    0px;
+    background-color: #1a1a1a;
+}
+
+element normal.normal {
+    background-color: #1a1a1a;
+    text-color:       #a0a0a0;
+}
+
+element selected.normal {
+    background-color: #1a1a1a;
+    text-color:       #e8e8e8;
+}
+
+element selected.active {
+    background-color: #1a1a1a;
+    text-color:       #e8e8e8;
+}
+
+element-text {
+    font:             "JetBrainsMono Nerd Font 10";
+    horizontal-align:   0.5;
+    vertical-align:     0.5;
+    ellipsize:          false;
+}

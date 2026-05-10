@@ -69,6 +69,7 @@ install_dependencies() {
             echo -e "${YELLOW}Installing packages (Ubuntu/Debian)...${NC}"
             sudo apt update -qq
             sudo apt install -y \
+                util-linux \
                 i3 \
                 polybar \
                 picom \
@@ -95,6 +96,7 @@ install_dependencies() {
                 pulseaudio-utils \
                 pavucontrol \
                 rofi \
+                yad \
                 dunst \
                 brightnessctl \
                 playerctl
@@ -111,6 +113,7 @@ install_dependencies() {
         arch|manjaro)
             echo -e "${YELLOW}Installing packages (Arch Linux)...${NC}"
             sudo pacman -S --needed --noconfirm \
+                util-linux \
                 i3-wm \
                 polybar \
                 picom \
@@ -142,6 +145,7 @@ install_dependencies() {
                 pulseaudio-alsa \
                 pavucontrol \
                 rofi \
+                yad \
                 dunst \
                 brightnessctl \
                 playerctl
@@ -149,6 +153,7 @@ install_dependencies() {
         fedora)
             echo -e "${YELLOW}Installing packages (Fedora)...${NC}"
             sudo dnf install -y \
+                util-linux \
                 i3 \
                 polybar \
                 picom \
@@ -178,6 +183,7 @@ install_dependencies() {
                 pulseaudio-utils \
                 pavucontrol \
                 rofi \
+                yad \
                 dunst \
                 brightnessctl \
                 playerctl
@@ -344,8 +350,10 @@ create_symlinks() {
     ln -sf "$DOTFILES_DIR/i3/"*.conf "$HOME_DIR/.config/i3/" 2>/dev/null || true
     ln -sf "$DOTFILES_DIR/i3/scripts/"*.sh "$HOME_DIR/.config/i3/scripts/" 2>/dev/null || true
     
-    # polybar (config + launch + scripts na raiz do tema novo + modules/)
-    ln -sf "$DOTFILES_DIR/polybar/config.ini" "$HOME_DIR/.config/polybar/config.ini"
+    # polybar — config.ini é cópia (não symlink): install.sh substitui ~/.config por caminho
+    # absoluto; symlink faria o sed alterar o ficheiro no repositório.
+    cp -f "$DOTFILES_DIR/polybar/config.ini" "$HOME_DIR/.config/polybar/config.ini"
+    chmod 644 "$HOME_DIR/.config/polybar/config.ini"
     ln -sf "$DOTFILES_DIR/polybar/launch.sh" "$HOME_DIR/.config/polybar/launch.sh"
     shopt -s nullglob
     for pb_script in "$DOTFILES_DIR/polybar"/*.sh; do
@@ -401,9 +409,19 @@ create_symlinks() {
 fix_hardcoded_paths() {
     echo -e "${YELLOW}[8/11] Fixing hardcoded paths...${NC}"
     
-    # Fix paths in polybar config if needed
+    # Fix paths in polybar config (~ não é fiável no exec do custom/script em todas as versões)
     if [ -f "$HOME_DIR/.config/polybar/config.ini" ]; then
+        sed -i "s|~/.config|$HOME_DIR/.config|g" "$HOME_DIR/.config/polybar/config.ini" 2>/dev/null || true
         sed -i "s|/home/[^/]*/.config|$HOME_DIR/.config|g" "$HOME_DIR/.config/polybar/config.ini" 2>/dev/null || true
+        # Forçar caminhos absolutos no [module/date] (exec + click; evita ENOENT ao clicar)
+        awk -v home="$HOME_DIR" '
+            /^\[module\/date\]/ { in_date=1 }
+            /^\[/ && !/^\[module\/date\]/ { in_date=0 }
+            in_date && /^exec = / { print "exec = " home "/.config/polybar/date.sh"; next }
+            in_date && /^click-left = / { print "click-left = " home "/.config/polybar/calendar.sh"; next }
+            { print }
+        ' "$HOME_DIR/.config/polybar/config.ini" > "$HOME_DIR/.config/polybar/config.ini.tmp" &&
+            mv "$HOME_DIR/.config/polybar/config.ini.tmp" "$HOME_DIR/.config/polybar/config.ini"
     fi
     
     # Fix paths in Python scripts
@@ -589,13 +607,19 @@ main() {
     # Configure system settings
     configure_system
     
-    # Change shell to zsh if not already
-    if [ "$SHELL" != "$(which zsh)" ]; then
+    # Change shell to zsh if not already (não redireccionar stderr: chsh pede palavra-passe no TTY)
+    if [ "$(basename "${SHELL:-}")" != "zsh" ] && command -v zsh >/dev/null 2>&1; then
         echo -e "${YELLOW}Changing default shell to zsh...${NC}"
-        chsh -s $(which zsh) 2>/dev/null || {
-            echo -e "${YELLOW}Could not change shell automatically.${NC}"
-            echo -e "${YELLOW}Run manually: chsh -s $(which zsh)${NC}"
-        }
+        echo -e "${BLUE}Se pedir «Password», é a do teu utilizador (sudo não serve).${NC}"
+        if [ -t 0 ]; then
+            chsh -s "$(command -v zsh)" || {
+                echo -e "${YELLOW}Could not change shell (cancelaste ou falhou).${NC}"
+                echo -e "${YELLOW}Run manually: chsh -s $(command -v zsh)${NC}"
+            }
+        else
+            echo -e "${YELLOW}Sem terminal interactivo — não foi pedido chsh aqui.${NC}"
+            echo -e "${YELLOW}Run manually: chsh -s $(command -v zsh)${NC}"
+        fi
     fi
     
     echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
