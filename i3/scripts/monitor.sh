@@ -25,9 +25,9 @@ if [ -n "$PRIMARY" ] && [ "$PRIMARY" != "$PORTRAIT_MONITOR" ] && xrandr | grep -
   ')"
 
   if [ -n "$PORTRAIT_MODE" ]; then
-    xrandr --output "$PORTRAIT_MONITOR" --mode "$PORTRAIT_MODE" --rotate normal --right-of "$PRIMARY" --scale 1x1
+    xrandr --output "$PORTRAIT_MONITOR" --mode "$PORTRAIT_MODE" --rotate left --right-of "$PRIMARY" --scale 1x1
   else
-    xrandr --output "$PORTRAIT_MONITOR" --auto --rotate normal --right-of "$PRIMARY" --scale 1x1
+    xrandr --output "$PORTRAIT_MONITOR" --auto --rotate left --right-of "$PRIMARY" --scale 1x1
   fi
 fi
 
