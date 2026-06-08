@@ -99,8 +99,9 @@ install_dependencies() {
                 yad \
                 dunst \
                 brightnessctl \
-                playerctl
-            
+                playerctl \
+                imagemagick
+
             # Try to install clipmenu (may not be in all repositories)
             if sudo apt install -y clipmenu 2>/dev/null; then
                 echo -e "${GREEN}✓ clipmenu installed${NC}"
@@ -148,7 +149,8 @@ install_dependencies() {
                 yad \
                 dunst \
                 brightnessctl \
-                playerctl
+                playerctl \
+                imagemagick
             ;;
         fedora)
             echo -e "${YELLOW}Installing packages (Fedora)...${NC}"
@@ -186,8 +188,9 @@ install_dependencies() {
                 yad \
                 dunst \
                 brightnessctl \
-                playerctl
-            
+                playerctl \
+                ImageMagick
+
             # Try to install clipmenu (may not be in all repositories)
             if sudo dnf install -y clipmenu 2>/dev/null; then
                 echo -e "${GREEN}✓ clipmenu installed${NC}"
