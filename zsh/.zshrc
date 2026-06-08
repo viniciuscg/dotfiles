@@ -107,3 +107,4 @@ alias c='clear'
 
 # Configuração automática do Go
 export PATH=$PATH:/usr/local/go/bin
+export PATH="$HOME/.local/bin:$PATH"
