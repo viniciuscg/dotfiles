@@ -52,6 +52,7 @@ backup_existing() {
     [ -d "$HOME_DIR/.config/picom" ] && cp -r "$HOME_DIR/.config/picom" "$BACKUP_DIR/picom.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/kitty" ] && cp -r "$HOME_DIR/.config/kitty" "$BACKUP_DIR/kitty.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/dunst" ] && cp -r "$HOME_DIR/.config/dunst" "$BACKUP_DIR/dunst.bak" 2>/dev/null || true
+    [ -d "$HOME_DIR/.config/sworkstyle" ] && cp -r "$HOME_DIR/.config/sworkstyle" "$BACKUP_DIR/sworkstyle.bak" 2>/dev/null || true
     [ -f "$HOME_DIR/.config/Code/User/vscode-custom.css" ] && cp "$HOME_DIR/.config/Code/User/vscode-custom.css" "$BACKUP_DIR/vscode-custom.css.bak" 2>/dev/null || true
     [ -f "$HOME_DIR/.config/Code/User/settings.json" ] && cp "$HOME_DIR/.config/Code/User/settings.json" "$BACKUP_DIR/vscode-settings.json.bak" 2>/dev/null || true
     
@@ -256,7 +257,7 @@ create_directories() {
     echo -e "${YELLOW}[6/11] Creating configuration directories...${NC}"
     # Symlinks em ~/.config/i3 ou ~/.config/polybar (ex.: repo estilo chupre) impedem mkdir -p.
     local cfg_subdir
-    for cfg_subdir in i3 polybar picom kitty wallpaper dunst rofi Code; do
+    for cfg_subdir in i3 polybar picom kitty wallpaper dunst rofi Code sworkstyle; do
         local p="${HOME_DIR}/.config/${cfg_subdir}"
         if [[ -L "$p" ]]; then
             echo -e "${YELLOW}  • Removendo symlink antigo: $p${NC}"
@@ -272,6 +273,7 @@ create_directories() {
     mkdir -p "$HOME_DIR/.config/dunst"
     mkdir -p "$HOME_DIR/.config/rofi"
     mkdir -p "$HOME_DIR/.config/Code/User"
+    mkdir -p "$HOME_DIR/.config/sworkstyle"
     echo -e "${GREEN}✓ Directories created!${NC}\n"
 }
 
@@ -375,7 +377,10 @@ create_symlinks() {
     
     # dunst
     ln -sf "$DOTFILES_DIR/dunst/dunstrc" "$HOME_DIR/.config/dunst/dunstrc"
-    
+
+    # sworkstyle (renomeia workspaces do i3 com icones dos apps)
+    ln -sf "$DOTFILES_DIR/sworkstyle/config.toml" "$HOME_DIR/.config/sworkstyle/config.toml"
+
     # rofi
     ln -sf "$DOTFILES_DIR/rofi/config.rasi" "$HOME_DIR/.config/rofi/config.rasi"
     ln -sf "$DOTFILES_DIR/rofi/"*.rasi "$HOME_DIR/.config/rofi/" 2>/dev/null || true

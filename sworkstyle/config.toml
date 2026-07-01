@@ -1,0 +1,20 @@
+# Config do sworkstyle (swayest_workstyle)
+# https://github.com/Lyr-7D1h/swayest_workstyle
+#
+# Renomeia os workspaces do i3 dinamicamente com icones dos apps abertos.
+# Esta config e MESCLADA com a config interna padrao do sworkstyle:
+# aqui so ajustamos o separador/fallback e adicionamos alguns aliases.
+#
+# Requer uma Nerd Font (a polybar ja usa uma). Se algum icone aparecer como
+# quadrado, instale/ajuste a fonte.
+
+# Icone usado quando nenhum app casa
+fallback = ''
+# Espaco entre os icones (2 espacos = mais respiro visual)
+separator = '  '
+
+[matching]
+'code' = ''
+'kitty' = ''
+'firefox' = ''
+'Alacritty' = ''

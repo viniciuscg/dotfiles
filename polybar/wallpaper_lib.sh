@@ -27,9 +27,6 @@ _wallpaper_append_from() {
     )
 }
 
-# Intensidade do desfoque no fundo das telas retrato (sintaxe do ImageMagick).
-WALLPAPER_BLUR="${WALLPAPER_BLUR:-0x24}"
-
 _wallpaper_magick() {
     if command -v magick >/dev/null 2>&1; then
         magick "$@"
@@ -41,11 +38,6 @@ _wallpaper_magick() {
 }
 
 # Monta um único PNG do tamanho da área X inteira e o aplica com feh.
-# Cada monitor recebe o tratamento certo:
-#   - paisagem: preenchimento normal (igual ao --bg-fill);
-#   - retrato : "smart fit" — a imagem inteira ajustada pela largura, sobre um
-#               fundo desfocado da própria imagem, evitando o zoom/corte
-#               exagerado que o --bg-fill faz numa tela 9:16.
 # Retorna !=0 (sem ImageMagick/xrandr ou em erro) para o chamador cair no fallback.
 _wallpaper_compose_set() {
     local src=$1
@@ -81,16 +73,15 @@ _wallpaper_compose_set() {
     local g
     for g in "${geom[@]}"; do
         read -r w h x y <<<"$g"
-        if (( h > w )); then
-            cmd+=( '(' \
-                     '(' "$src" -resize "${w}x${h}^" -gravity center -extent "${w}x${h}" -blur "$WALLPAPER_BLUR" ')' \
-                     '(' "$src" -resize "${w}x${h}" ')' \
-                     -gravity center -composite \
-                   ')' -geometry "+${x}+${y}" -composite )
-        else
-            cmd+=( '(' "$src" -resize "${w}x${h}^" -gravity center -extent "${w}x${h}" ')' \
-                   -geometry "+${x}+${y}" -composite )
-        fi
+        # Preenchimento total (--bg-fill) para qualquer orientação: cobre a tela
+        # e corta o excedente pelo centro.
+        # -gravity NorthWest antes do -geometry: o "-gravity center" usado para
+        # centralizar o corte vaza do grupo ( ) e faria o -geometry ser
+        # interpretado a partir do centro do canvas (colando o monitor no lugar
+        # errado e deixando telas — ex.: o laptop — pretas). Aqui forçamos
+        # coordenadas absolutas a partir do canto superior esquerdo.
+        cmd+=( '(' "$src" -resize "${w}x${h}^" -gravity center -extent "${w}x${h}" ')' \
+               -gravity NorthWest -geometry "+${x}+${y}" -composite )
     done
     cmd+=( "$out" )
 
