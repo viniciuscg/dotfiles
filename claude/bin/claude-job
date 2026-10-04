@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Roda uma tarefa agendada do Claude sem ninguém no terminal (estilo cron do Hermes).
+#   claude-job <nome>        roda ~/dotfiles/claude/jobs/<nome>.md agora
+#   claude-job list          lista tarefas e timers ativos
+#   claude-job on <nome>     liga o agendamento (systemd --user)
+#   claude-job off <nome>    desliga o agendamento
+# O horário fica na 1ª linha do job:  <!-- quando: *-*-* 08:00 -->  (formato OnCalendar do systemd)
+set -euo pipefail
+
+JOBS="${CLAUDE_JOBS_DIR:-$HOME/dotfiles/claude/jobs}"
+OUT="$HOME/claude-out/jobs"
+UNITS="$HOME/.config/systemd/user"
+
+when_of() { sed -n '1s/.*quando: *\(.*[^ ]\) *-->.*/\1/p' "$JOBS/$1.md"; }
+
+case "${1:-}" in
+  ""|-h|--help) sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  list)
+    for f in "$JOBS"/*.md; do
+      n=$(basename "$f" .md)
+      st=$(systemctl --user is-active "claude-job-$n.timer" 2>/dev/null || true)
+      printf '%-20s %-10s %s\n' "$n" "${st:-inactive}" "$(when_of "$n")"
+    done; exit 0 ;;
+  on|off)
+    n=${2:?nome do job}; [[ -f $JOBS/$n.md ]] || { echo "não existe: $JOBS/$n.md"; exit 1; }
+    if [[ $1 == on ]]; then
+      w=$(when_of "$n"); [[ -n $w ]] || { echo "falta a linha <!-- quando: ... --> em $n.md"; exit 1; }
+      mkdir -p "$UNITS"
+      cat > "$UNITS/claude-job-$n.service" <<UNIT
+[Unit]
+Description=Claude job: $n
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/claude-job $n
+UNIT
+      cat > "$UNITS/claude-job-$n.timer" <<UNIT
+[Unit]
+Description=Claude job timer: $n
+[Timer]
+OnCalendar=$w
+Persistent=true
+[Install]
+WantedBy=timers.target
+UNIT
+      systemctl --user daemon-reload
+      systemctl --user enable --now "claude-job-$n.timer"
+      systemctl --user list-timers "claude-job-$n.timer" --no-pager
+    else
+      systemctl --user disable --now "claude-job-$n.timer" 2>/dev/null || true
+      rm -f "$UNITS/claude-job-$n".{service,timer}
+      systemctl --user daemon-reload
+      echo "desligado: $n"
+    fi
+    exit 0 ;;
+esac
+
+n=$1; job="$JOBS/$n.md"
+[[ -f $job ]] || { echo "não existe: $job"; exit 1; }
+mkdir -p "$OUT"
+out="$OUT/$n-$(date +%Y-%m-%d_%H%M).md"
+export PATH="$HOME/.local/bin:$PATH"
+
+# systemd não tem DISPLAY/DBUS: pega da sessão gráfica pra notificação funcionar
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=/run/user/$(id -u)/bus}"
+
+cd "$HOME"
+if claude -p "$(sed '1{/quando:/d}' "$job")" \
+     --permission-mode auto --max-budget-usd "${CLAUDE_JOB_BUDGET:-2}" \
+     --name "job: $n" > "$out" 2>&1; then
+  notify-send -a "Claude Code" "🗓  Job '$n' pronto" "$(head -c 200 "$out")" 2>/dev/null || true
+else
+  notify-send -a "Claude Code" -u critical "⚠ Job '$n' falhou" "Veja $out" 2>/dev/null || true
+  exit 1
+fi

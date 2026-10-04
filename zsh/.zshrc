@@ -107,3 +107,14 @@ alias c='clear'
 
 # Configuração automática do Go
 export PATH=$PATH:/usr/local/go/bin
+export PATH="$HOME/.local/bin:$PATH"
+
+# Claude Code
+alias c='claude'
+alias ct='claude --continue'   # continua a última conversa desta pasta
+alias cr='claude --resume'     # escolhe uma conversa antiga pra retomar
+alias cplan='claude --permission-mode plan'  # só planeja/pesquisa, não altera nada
+alias ca='claude agents'       # painel dos agentes em background
+alias cbg='claude --bg'        # cbg "tarefa" -> roda em background
+alias crc='claude --remote-control'  # sessão controlável pelo celular (claude.ai/app)
+alias cjob='claude-job'        # tarefas agendadas: cjob list | cjob on bom-dia

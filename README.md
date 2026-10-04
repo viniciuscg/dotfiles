@@ -35,6 +35,7 @@ The installation script will:
 - Install all system dependencies
 - Install Oh My Zsh and plugins
 - Install Python dependencies
+- Install Claude Code (native installer)
 - Create all symbolic links
 - Install JetBrainsMono Nerd Font
 - Configure everything automatically
@@ -184,3 +185,18 @@ The installation script installs **everything** automatically:
 ## License
 
 Personal dotfiles — feel free to use and modify them as needed. I encourage you to do so.
+
+## Claude Code
+
+Configuração em `claude/`, aplicada pelo `install.sh`:
+
+- `statusline.sh` → `~/.claude/statusline.sh`: modelo, pasta, branch, contexto usado, limite de 5h/semana (assinatura Pro/Max) e custo da sessão
+- `hooks/notify.sh` → notificação no dunst quando o Claude pede permissão ou termina
+- `themes/minimal.json` → tema do Claude com a paleta do kitty/polybar
+- `CLAUDE.md` → `~/.claude/CLAUDE.md`: instruções globais (responder em pt-BR, etc.)
+- `settings.json` → mesclado em `~/.claude/settings.json` (não é symlink, o Claude também grava nele)
+- `skills/` (`/despachar`, `/pesquisa-profunda`, `/aprender`, `/handoff`) e `agents/` (`pesquisador`, `verificador`)
+- `bin/claude-job` + `jobs/`: tarefas agendadas com systemd (`cjob list`, `cjob on bom-dia`)
+- Aliases no zsh: `c`, `ct`, `cr`, `cplan`, `cbg`, `ca`, `crc`, `cjob`
+- Só a parte do Claude: `./install.sh --claude`
+- Guia de uso: [claude/GUIA.md](claude/GUIA.md)
