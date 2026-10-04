@@ -47,6 +47,9 @@ backup_existing() {
     mkdir -p "$BACKUP_DIR"
     
     [ -f "$HOME_DIR/.zshrc" ] && cp "$HOME_DIR/.zshrc" "$BACKUP_DIR/.zshrc.bak"
+    [ -f "$HOME_DIR/.zshenv" ] && cp "$HOME_DIR/.zshenv" "$BACKUP_DIR/.zshenv.bak"
+    [ -f "$HOME_DIR/.claude/settings.json" ] && cp "$HOME_DIR/.claude/settings.json" "$BACKUP_DIR/claude-settings.json.bak"
+    [ -f "$HOME_DIR/.claude/CLAUDE.md" ] && cp "$HOME_DIR/.claude/CLAUDE.md" "$BACKUP_DIR/claude-CLAUDE.md.bak"
     [ -d "$HOME_DIR/.config/i3" ] && cp -r "$HOME_DIR/.config/i3" "$BACKUP_DIR/i3.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/polybar" ] && cp -r "$HOME_DIR/.config/polybar" "$BACKUP_DIR/polybar.bak" 2>/dev/null || true
     [ -d "$HOME_DIR/.config/picom" ] && cp -r "$HOME_DIR/.config/picom" "$BACKUP_DIR/picom.bak" 2>/dev/null || true
@@ -99,6 +102,7 @@ install_dependencies() {
                 rofi \
                 yad \
                 dunst \
+                libnotify-bin \
                 brightnessctl \
                 playerctl \
                 imagemagick
@@ -149,6 +153,7 @@ install_dependencies() {
                 rofi \
                 yad \
                 dunst \
+                libnotify \
                 brightnessctl \
                 playerctl \
                 imagemagick
@@ -188,6 +193,7 @@ install_dependencies() {
                 rofi \
                 yad \
                 dunst \
+                libnotify \
                 brightnessctl \
                 playerctl \
                 ImageMagick
@@ -250,6 +256,21 @@ install_python_deps() {
         echo -e "${YELLOW}Try manually: pip3 install --user colorthief${NC}"
     }
     echo -e "${GREEN}✓ Python dependencies installed!${NC}\n"
+}
+
+# Function to install Claude Code (native installer -> ~/.local/bin/claude)
+install_claude_code() {
+    echo -e "${YELLOW}Installing Claude Code...${NC}"
+    if command_exists claude || [ -x "$HOME_DIR/.local/bin/claude" ]; then
+        echo -e "${GREEN}✓ Claude Code already installed (auto-updates sozinho).${NC}\n"
+        return 0
+    fi
+    curl -fsSL https://claude.ai/install.sh | bash || {
+        echo -e "${YELLOW}⚠ Could not install Claude Code.${NC}"
+        echo -e "${YELLOW}  Run manually: curl -fsSL https://claude.ai/install.sh | bash${NC}\n"
+        return 0
+    }
+    echo -e "${GREEN}✓ Claude Code installed! Run 'claude' to log in.${NC}\n"
 }
 
 # Function to create directories
@@ -346,6 +367,35 @@ PY
     echo -e "${YELLOW}    ./vscode/fix-custom-css-perms.sh — se VS Code pedir «admin privileges», corre isto (não abras Code como root)${NC}"
 }
 
+# Function to configure Claude Code (status line, hooks, CLAUDE.md global)
+setup_claude_config() {
+    echo -e "${BLUE}Claude Code: status line, notificações e CLAUDE.md…${NC}"
+    local dest="$HOME_DIR/.claude"
+    mkdir -p "$dest/hooks"
+    ln -sf "$DOTFILES_DIR/claude/statusline.sh" "$dest/statusline.sh"
+    ln -sf "$DOTFILES_DIR/claude/hooks/notify.sh" "$dest/hooks/notify.sh"
+    ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$dest/CLAUDE.md"
+    mkdir -p "$dest/themes"
+    ln -sf "$DOTFILES_DIR/claude/themes/"*.json "$dest/themes/"
+    # skills, subagentes e agendador de jobs
+    mkdir -p "$dest/skills" "$dest/agents" "$HOME_DIR/.local/bin" "$HOME_DIR/claude-out"
+    local sk
+    for sk in "$DOTFILES_DIR/claude/skills/"*/; do
+        ln -sfn "${sk%/}" "$dest/skills/$(basename "$sk")"
+    done
+    ln -sf "$DOTFILES_DIR/claude/agents/"*.md "$dest/agents/"
+    ln -sf "$DOTFILES_DIR/claude/bin/claude-job" "$HOME_DIR/.local/bin/claude-job"
+    chmod +x "$DOTFILES_DIR/claude/statusline.sh" "$DOTFILES_DIR/claude/hooks/notify.sh" "$DOTFILES_DIR/claude/bin/claude-job"
+    # settings.json é mesclado (não symlink): o Claude Code também grava nele
+    # (permissões, /config) e essas mudanças locais não devem sujar o repo.
+    local settings="$dest/settings.json"
+    [ -f "$settings" ] || echo '{}' > "$settings"
+    local tmp
+    tmp=$(mktemp)
+    jq -s '.[0] * .[1]' "$settings" "$DOTFILES_DIR/claude/settings.json" > "$tmp" && mv "$tmp" "$settings"
+    echo -e "${GREEN}✓ Claude Code configurado.${NC}"
+}
+
 # Function to create symlinks
 create_symlinks() {
     echo -e "${YELLOW}[7/11] Creating symbolic links...${NC}"
@@ -394,6 +444,10 @@ create_symlinks() {
     
     # zsh
     ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"
+    ln -sf "$DOTFILES_DIR/zsh/.zshenv" "$HOME_DIR/.zshenv"
+
+    # claude code
+    setup_claude_config
     
     # wallpapers - copy all wallpapers
     echo -e "${BLUE}Copying wallpapers...${NC}"
@@ -574,6 +628,12 @@ download_fonts_manual() {
 
 # Main function
 main() {
+    # ./install.sh --claude  → aplica só a configuração do Claude Code
+    if [[ "${1:-}" == "--claude" ]]; then
+        setup_claude_config
+        return 0
+    fi
+
     # Check if running as root
     if [ "$EUID" -eq 0 ]; then
         echo -e "${RED}Please do not run this script as root!${NC}"
@@ -594,6 +654,9 @@ main() {
     
     # Install Python dependencies
     install_python_deps
+
+    # Install Claude Code
+    install_claude_code
     
     # Create directories
     create_directories
@@ -657,4 +720,4 @@ main() {
 }
 
 # Execute main function
-main
+main "$@"

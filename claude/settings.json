@@ -1,0 +1,54 @@
+{
+  "theme": "custom:minimal",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "refreshInterval": 60
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt|agent_needs_input|agent_completed",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "tui": "fullscreen",
+  "maxProseWidth": 100,
+  "timeFormat": "24-hour",
+  "showThinkingSummaries": true,
+  "spinnerVerbs": {
+    "mode": "append",
+    "verbs": [
+      "Matutando",
+      "Fuçando",
+      "Destrinchando",
+      "Cozinhando",
+      "Garimpando",
+      "Engenhando",
+      "Caprichando",
+      "Quebrando a cabeça"
+    ]
+  },
+  "spinnerTipsOverride": {
+    "tips": [
+      "/clear começa uma conversa limpa — use ao trocar de assunto",
+      "/compact resume a conversa quando a barra de contexto passar de 60%",
+      "/usage mostra seus limites de 5h e da semana",
+      "/resume (ou alias cr) volta pra uma conversa antiga",
+      "Esc para o Claude no meio; Esc Esc volta pra uma mensagem anterior",
+      "Ctrl+O mostra o raciocínio do Claude",
+      "Shift+Tab troca o modo de permissão (plan mode pra planejar antes de agir)",
+      "Arraste uma imagem ou cole com Ctrl+V pra mostrar algo pro Claude"
+    ]
+  },
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
