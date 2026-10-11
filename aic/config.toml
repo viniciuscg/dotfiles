@@ -1,0 +1,23 @@
+# Preferências do AIC (github.com/viniciuscg/AIC). Sem segredos: tokens e ids do
+# Notion/Slack vão em ~/.config/aic/.env (veja ~/AIC/.env.example).
+#
+# O install.sh dos dotfiles copia este arquivo para ~/.config/aic/config.toml só se
+# ele ainda não existir; depois o próprio AIC grava nele pelas Configurações.
+
+theme = "aic"
+setup_done = true
+view = "blocks"
+leader = "Ctrl+Space"
+font_family = "JetBrainsMono Nerd Font Mono"
+font_size = 14.0
+ui_scale = 1.0
+connector = "claude"
+animations = true
+
+[sound]
+enabled = true
+volume = 0.8
+
+[notify]
+desktop = true
+only_when_unfocused = true

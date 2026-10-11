@@ -43,7 +43,7 @@ command_exists() {
 
 # Function to backup existing configurations
 backup_existing() {
-    echo -e "${YELLOW}[1/11] Backing up existing configurations...${NC}"
+    echo -e "${YELLOW}[1/12] Backing up existing configurations...${NC}"
     mkdir -p "$BACKUP_DIR"
     
     [ -f "$HOME_DIR/.zshrc" ] && cp "$HOME_DIR/.zshrc" "$BACKUP_DIR/.zshrc.bak"
@@ -65,7 +65,7 @@ backup_existing() {
 # Function to install system dependencies
 install_dependencies() {
     DISTRO=$(detect_distro)
-    echo -e "${YELLOW}[2/11] Installing system dependencies...${NC}"
+    echo -e "${YELLOW}[2/12] Installing system dependencies...${NC}"
     echo -e "${BLUE}Detected distribution: $DISTRO${NC}\n"
     
     case $DISTRO in
@@ -219,7 +219,7 @@ install_dependencies() {
 
 # Function to install Oh My Zsh
 install_ohmyzsh() {
-    echo -e "${YELLOW}[3/11] Installing Oh My Zsh...${NC}"
+    echo -e "${YELLOW}[3/12] Installing Oh My Zsh...${NC}"
     if [ ! -d "$HOME_DIR/.oh-my-zsh" ]; then
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
         echo -e "${GREEN}✓ Oh My Zsh installed!${NC}\n"
@@ -230,7 +230,7 @@ install_ohmyzsh() {
 
 # Function to install Zsh plugins
 install_zsh_plugins() {
-    echo -e "${YELLOW}[4/11] Installing Zsh plugins...${NC}"
+    echo -e "${YELLOW}[4/12] Installing Zsh plugins...${NC}"
     ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME_DIR/.oh-my-zsh/custom}"
     
     # zsh-autosuggestions
@@ -250,7 +250,7 @@ install_zsh_plugins() {
 
 # Function to install Python dependencies
 install_python_deps() {
-    echo -e "${YELLOW}[5/11] Installing Python dependencies...${NC}"
+    echo -e "${YELLOW}[5/12] Installing Python dependencies...${NC}"
     pip3 install --user --quiet colorthief 2>/dev/null || {
         echo -e "${YELLOW}Warning: Could not install colorthief via pip.${NC}"
         echo -e "${YELLOW}Try manually: pip3 install --user colorthief${NC}"
@@ -275,7 +275,7 @@ install_claude_code() {
 
 # Function to create directories
 create_directories() {
-    echo -e "${YELLOW}[6/11] Creating configuration directories...${NC}"
+    echo -e "${YELLOW}[6/12] Creating configuration directories...${NC}"
     # Symlinks em ~/.config/i3 ou ~/.config/polybar (ex.: repo estilo chupre) impedem mkdir -p.
     local cfg_subdir
     for cfg_subdir in i3 polybar picom kitty wallpaper dunst rofi Code sworkstyle; do
@@ -398,7 +398,7 @@ setup_claude_config() {
 
 # Function to create symlinks
 create_symlinks() {
-    echo -e "${YELLOW}[7/11] Creating symbolic links...${NC}"
+    echo -e "${YELLOW}[7/12] Creating symbolic links...${NC}"
     
     # i3 configuration files
     ln -sf "$DOTFILES_DIR/i3/config" "$HOME_DIR/.config/i3/config"
@@ -469,7 +469,7 @@ create_symlinks() {
 
 # Function to fix hardcoded paths
 fix_hardcoded_paths() {
-    echo -e "${YELLOW}[8/11] Fixing hardcoded paths...${NC}"
+    echo -e "${YELLOW}[8/12] Fixing hardcoded paths...${NC}"
     
     # Fix paths in polybar config (~ não é fiável no exec do custom/script em todas as versões)
     if [ -f "$HOME_DIR/.config/polybar/config.ini" ]; then
@@ -494,7 +494,7 @@ fix_hardcoded_paths() {
 
 # Function to make scripts executable
 make_executable() {
-    echo -e "${YELLOW}[9/11] Setting executable permissions...${NC}"
+    echo -e "${YELLOW}[9/12] Setting executable permissions...${NC}"
     chmod +x "$HOME_DIR/.config/polybar/launch.sh" 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/polybar/"*.sh 2>/dev/null || true
     chmod +x "$HOME_DIR/.config/polybar/modules/"*.sh 2>/dev/null || true
@@ -504,9 +504,35 @@ make_executable() {
     echo -e "${GREEN}✓ Permissions set!${NC}\n"
 }
 
+# Function to install AIC (central de sessões do Claude Code, github.com/viniciuscg/AIC)
+install_aic() {
+    echo -e "${YELLOW}[11/12] Installing AIC...${NC}"
+    local aic_dir="$HOME_DIR/AIC"
+    if [ -d "$aic_dir/.git" ]; then
+        git -C "$aic_dir" pull --ff-only || {
+            echo -e "${YELLOW}⚠ git pull falhou em $aic_dir (mudanças locais?). Seguindo com o que já está lá.${NC}"
+        }
+    else
+        git clone git@github.com:viniciuscg/AIC.git "$aic_dir" || {
+            echo -e "${YELLOW}⚠ Could not clone AIC (chave SSH no GitHub?).${NC}"
+            echo -e "${YELLOW}  Run manually: git clone git@github.com:viniciuscg/AIC.git ~/AIC && ~/AIC/install.sh${NC}\n"
+            return 0
+        }
+    fi
+    # config.toml é copiado só se não existir: o AIC grava nele pelas Configurações
+    # (e a gravação troca o arquivo, o que quebraria um symlink).
+    mkdir -p "$HOME_DIR/.config/aic"
+    [ -f "$HOME_DIR/.config/aic/config.toml" ] || cp "$DOTFILES_DIR/aic/config.toml" "$HOME_DIR/.config/aic/config.toml"
+    "$aic_dir/install.sh" || {
+        echo -e "${YELLOW}⚠ AIC install.sh falhou. Run manually: ~/AIC/install.sh${NC}\n"
+        return 0
+    }
+    echo -e "${GREEN}✓ AIC installed! Abra com: aic${NC}\n"
+}
+
 # Function to configure system settings
 configure_system() {
-    echo -e "${YELLOW}[11/11] Configuring system settings...${NC}"
+    echo -e "${YELLOW}[12/12] Configuring system settings...${NC}"
     
     # Set primary monitor
     if command_exists xrandr; then
@@ -535,7 +561,7 @@ configure_system() {
 
 # Function to install fonts
 install_fonts() {
-    echo -e "${YELLOW}[10/11] Installing Nerd Fonts (JetBrainsMono, FiraCode, VictorMono)...${NC}"
+    echo -e "${YELLOW}[10/12] Installing Nerd Fonts (JetBrainsMono, FiraCode, VictorMono)...${NC}"
     DISTRO=$(detect_distro)
     FONT_DIR="$HOME_DIR/.local/share/fonts"
     mkdir -p "$FONT_DIR"
@@ -674,6 +700,9 @@ main() {
     
     # Install fonts
     install_fonts
+    
+    # Install AIC
+    install_aic
     
     # Configure system settings
     configure_system
