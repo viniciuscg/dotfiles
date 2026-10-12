@@ -1,752 +1,552 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# "~/..." nas mensagens é texto para o usuário, não caminho a expandir.
+# shellcheck disable=SC2088
+# 🖤 Instalador dos dotfiles (i3 · polybar · kitty · zsh · tmux · rofi · dunst · picom).
+#
+# Idempotente: rodar de novo só ajusta o que mudou. Nunca sobrescreve em
+# silêncio — tudo que estiver no caminho vai antes para ~/.dotfiles_backup/<data>/.
+#
+# Uso: ./install.sh [--dry-run] [--links] [--no-packages] [--claude] [--help]
 
-# Dotfiles Installation Script
-# This script automatically installs all dependencies and configures the dotfiles
+set -euo pipefail
 
-set -e  # Exit on error
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Repository directory
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HOME_DIR="$HOME"
-BACKUP_DIR="$HOME_DIR/.dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
+BACKUP_DIR="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+FONT_VERSION="v3.1.1"
 
-echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║   Dotfiles Installation Script        ║${NC}"
-echo -e "${GREEN}╚════════════════════════════════════════╝${NC}\n"
+DRY_RUN=0
+LINKS_ONLY=0
+SKIP_PACKAGES=0
+CHANGED=0
 
-# Function to detect Linux distribution
+# 🎨 Saída
+if [[ -t 1 ]]; then
+  C_ACC=$'\033[38;2;184;101;47m' C_DIM=$'\033[38;2;124;111;100m' C_OK=$'\033[38;2;154;156;98m'
+  C_WARN=$'\033[38;2;201;163;90m' C_ERR=$'\033[38;2;168;80;80m' C_RST=$'\033[0m' C_B=$'\033[1m'
+else
+  C_ACC='' C_DIM='' C_OK='' C_WARN='' C_ERR='' C_RST='' C_B=''
+fi
+step() { printf '\n%s%s▌ %s%s\n' "$C_ACC" "$C_B" "$*" "$C_RST"; }
+info() { printf '  %s%s%s\n' "$C_DIM" "$*" "$C_RST"; }
+ok() { printf '  %s✓%s %s\n' "$C_OK" "$C_RST" "$*"; }
+warn() { printf '  %s!%s %s\n' "$C_WARN" "$C_RST" "$*"; }
+die() {
+  printf '%s✗ %s%s\n' "$C_ERR" "$*" "$C_RST" >&2
+  exit 1
+}
+
+usage() {
+  cat <<EOF
+Uso: ./install.sh [opções]
+
+  --dry-run      mostra o que seria feito, sem mudar nada
+  --links        só configs e links (sem pacotes, fontes, Oh My Zsh e AIC)
+  --no-packages  pula a instalação de pacotes do sistema (que usa sudo)
+  --claude       só a configuração do Claude Code
+  -h, --help     esta ajuda
+
+Backups de qualquer arquivo substituído: ~/.dotfiles_backup/<data>/
+EOF
+}
+
+# ⚙️ Execução (respeita --dry-run)
+run() {
+  if ((DRY_RUN)); then
+    printf '  %s[dry-run]%s %s\n' "$C_WARN" "$C_RST" "$*"
+  else
+    "$@"
+  fi
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
 detect_distro() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        DISTRO=$ID
-    elif [ -f /etc/arch-release ]; then
-        DISTRO="arch"
-    elif [ -f /etc/debian_version ]; then
-        DISTRO="debian"
-    else
-        DISTRO="unknown"
-    fi
-    echo "$DISTRO"
-}
-
-# Function to check if command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Function to backup existing configurations
-backup_existing() {
-    echo -e "${YELLOW}[1/12] Backing up existing configurations...${NC}"
-    mkdir -p "$BACKUP_DIR"
-    
-    [ -f "$HOME_DIR/.zshrc" ] && cp "$HOME_DIR/.zshrc" "$BACKUP_DIR/.zshrc.bak"
-    [ -f "$HOME_DIR/.zshenv" ] && cp "$HOME_DIR/.zshenv" "$BACKUP_DIR/.zshenv.bak"
-    [ -f "$HOME_DIR/.claude/settings.json" ] && cp "$HOME_DIR/.claude/settings.json" "$BACKUP_DIR/claude-settings.json.bak"
-    [ -f "$HOME_DIR/.claude/CLAUDE.md" ] && cp "$HOME_DIR/.claude/CLAUDE.md" "$BACKUP_DIR/claude-CLAUDE.md.bak"
-    [ -d "$HOME_DIR/.config/i3" ] && cp -r "$HOME_DIR/.config/i3" "$BACKUP_DIR/i3.bak" 2>/dev/null || true
-    [ -d "$HOME_DIR/.config/polybar" ] && cp -r "$HOME_DIR/.config/polybar" "$BACKUP_DIR/polybar.bak" 2>/dev/null || true
-    [ -d "$HOME_DIR/.config/picom" ] && cp -r "$HOME_DIR/.config/picom" "$BACKUP_DIR/picom.bak" 2>/dev/null || true
-    [ -d "$HOME_DIR/.config/kitty" ] && cp -r "$HOME_DIR/.config/kitty" "$BACKUP_DIR/kitty.bak" 2>/dev/null || true
-    [ -d "$HOME_DIR/.config/dunst" ] && cp -r "$HOME_DIR/.config/dunst" "$BACKUP_DIR/dunst.bak" 2>/dev/null || true
-    [ -d "$HOME_DIR/.config/sworkstyle" ] && cp -r "$HOME_DIR/.config/sworkstyle" "$BACKUP_DIR/sworkstyle.bak" 2>/dev/null || true
-    [ -f "$HOME_DIR/.config/Code/User/vscode-custom.css" ] && cp "$HOME_DIR/.config/Code/User/vscode-custom.css" "$BACKUP_DIR/vscode-custom.css.bak" 2>/dev/null || true
-    [ -f "$HOME_DIR/.config/Code/User/settings.json" ] && cp "$HOME_DIR/.config/Code/User/settings.json" "$BACKUP_DIR/vscode-settings.json.bak" 2>/dev/null || true
-    
-    echo -e "${GREEN}✓ Backup created at: $BACKUP_DIR${NC}\n"
-}
-
-# Function to install system dependencies
-install_dependencies() {
-    DISTRO=$(detect_distro)
-    echo -e "${YELLOW}[2/12] Installing system dependencies...${NC}"
-    echo -e "${BLUE}Detected distribution: $DISTRO${NC}\n"
-    
-    case $DISTRO in
-        ubuntu|debian)
-            echo -e "${YELLOW}Installing packages (Ubuntu/Debian)...${NC}"
-            sudo apt update -qq
-            sudo apt install -y \
-                util-linux \
-                i3 \
-                polybar \
-                picom \
-                zsh \
-                dex \
-                xss-lock \
-                i3lock \
-                dmenu \
-                x11-xserver-utils \
-                acpi \
-                jq \
-                python3-dbus \
-                python3-pip \
-                curl \
-                git \
-                flameshot \
-                vim \
-                feh \
-                kitty \
-                unzip \
-                wget \
-                fontconfig \
-                pulseaudio \
-                pulseaudio-utils \
-                pavucontrol \
-                rofi \
-                yad \
-                dunst \
-                libnotify-bin \
-                brightnessctl \
-                playerctl \
-                imagemagick
-
-            # Try to install clipmenu (may not be in all repositories)
-            if sudo apt install -y clipmenu 2>/dev/null; then
-                echo -e "${GREEN}✓ clipmenu installed${NC}"
-            else
-                echo -e "${YELLOW}⚠ clipmenu not available in repositories${NC}"
-                echo -e "${YELLOW}  Install manually: sudo apt install clipmenu${NC}"
-                echo -e "${YELLOW}  Or from source: https://github.com/cdown/clipmenu${NC}"
-            fi
-            ;;
-        arch|manjaro)
-            echo -e "${YELLOW}Installing packages (Arch Linux)...${NC}"
-            sudo pacman -S --needed --noconfirm \
-                util-linux \
-                i3-wm \
-                polybar \
-                picom \
-                zsh \
-                dex \
-                xss-lock \
-                i3lock \
-                network-manager-applet \
-                dmenu \
-                xorg-xrandr \
-                xorg-xset \
-                xorg-xkb-utils \
-                acpi \
-                jq \
-                python-dbus \
-                python-pip \
-                curl \
-                git \
-                flameshot \
-                vim \
-                feh \
-                clipmenu \
-                kitty \
-                spotify-launcher \
-                unzip \
-                wget \
-                fontconfig \
-                pulseaudio \
-                pulseaudio-alsa \
-                pavucontrol \
-                rofi \
-                yad \
-                dunst \
-                libnotify \
-                brightnessctl \
-                playerctl \
-                imagemagick
-            ;;
-        fedora)
-            echo -e "${YELLOW}Installing packages (Fedora)...${NC}"
-            sudo dnf install -y \
-                util-linux \
-                i3 \
-                polybar \
-                picom \
-                zsh \
-                dex \
-                xss-lock \
-                i3lock \
-                NetworkManager-applet \
-                dmenu \
-                xorg-xrandr \
-                xorg-xset \
-                xorg-xkb-utils \
-                acpi \
-                jq \
-                python3-dbus \
-                python3-pip \
-                curl \
-                git \
-                flameshot \
-                vim \
-                feh \
-                kitty \
-                unzip \
-                wget \
-                fontconfig \
-                pulseaudio \
-                pulseaudio-utils \
-                pavucontrol \
-                rofi \
-                yad \
-                dunst \
-                libnotify \
-                brightnessctl \
-                playerctl \
-                ImageMagick
-
-            # Try to install clipmenu (may not be in all repositories)
-            if sudo dnf install -y clipmenu 2>/dev/null; then
-                echo -e "${GREEN}✓ clipmenu installed${NC}"
-            else
-                echo -e "${YELLOW}⚠ clipmenu not available in repositories${NC}"
-                echo -e "${YELLOW}  Install manually or from source: https://github.com/cdown/clipmenu${NC}"
-            fi
-            echo -e "${YELLOW}Note: Install Spotify manually from: https://www.spotify.com/download/linux/${NC}"
-            ;;
-        *)
-            echo -e "${RED}Unsupported distribution: $DISTRO${NC}"
-            echo -e "${YELLOW}Please install dependencies manually.${NC}"
-            echo -e "${YELLOW}Required packages: i3, polybar, picom, zsh, dex, xss-lock, i3lock, nm-applet, dmenu, flameshot, vim, feh, clipmenu, kitty, pulseaudio, pavucontrol, rofi, dunst, brightnessctl${NC}"
-            exit 1
-            ;;
+  if [[ -r /etc/os-release ]]; then
+    # shellcheck source=/dev/null
+    . /etc/os-release
+    case " ${ID:-} ${ID_LIKE:-} " in
+    *" arch "*) echo arch ;;
+    *" fedora "*) echo fedora ;;
+    *" debian "* | *" ubuntu "*) echo debian ;;
+    *) echo "${ID:-unknown}" ;;
     esac
-    echo -e "${GREEN}✓ System dependencies installed!${NC}\n"
+  else
+    echo unknown
+  fi
 }
 
-# Function to install Oh My Zsh
+# 📦 Move o que estiver em $1 para o backup, mantendo o caminho relativo ao $HOME.
+backup() {
+  local target=$1 rel dest
+  [[ -e "$target" || -L "$target" ]] || return 0
+  rel=${target#"$HOME"/}
+  dest="$BACKUP_DIR/$rel"
+  run mkdir -p "$(dirname "$dest")"
+  run mv "$target" "$dest"
+  info "backup: ~/$rel → ${dest/#$HOME/\~}"
+}
+
+# Garante um diretório real (um symlink antigo no lugar vai para o backup).
+ensure_dir() {
+  local d=$1
+  if [[ -L "$d" ]]; then
+    backup "$d"
+  fi
+  [[ -d "$d" ]] || run mkdir -p "$d"
+}
+
+# 🔗 Link idempotente: não faz nada se já aponta para o lugar certo.
+link() {
+  local src=$1 dest=$2
+  [[ -e "$src" ]] || die "não existe no repo: $src"
+  if [[ -L "$dest" && "$(readlink "$dest")" == "$src" ]]; then
+    return 0
+  fi
+  ensure_dir "$(dirname "$dest")"
+  backup "$dest"
+  run ln -s "$src" "$dest"
+  ok "link ${dest/#$HOME/\~}"
+  CHANGED=1
+}
+
+# Linka cada arquivo de um padrão (sem criar links literais "*.sh" quando não casa nada).
+link_glob() {
+  local dest_dir=$1
+  shift
+  local f
+  for f in "$@"; do
+    [[ -e "$f" ]] || continue
+    link "$f" "$dest_dir/$(basename "$f")"
+  done
+}
+
+# Copia só se o destino não existir ou for diferente (com backup).
+copy_file() {
+  local src=$1 dest=$2
+  if [[ -f "$dest" && ! -L "$dest" ]] && cmp -s "$src" "$dest"; then
+    return 0
+  fi
+  ensure_dir "$(dirname "$dest")"
+  backup "$dest"
+  run cp "$src" "$dest"
+  ok "cópia ${dest/#$HOME/\~}"
+  CHANGED=1
+}
+
+# Remove symlinks quebrados que apontam para dentro do repo (sobras de versões antigas).
+clean_stale_links() {
+  local dir l
+  for dir in "$CONFIG/i3" "$CONFIG/polybar" "$CONFIG/rofi" "$CONFIG/polybar/modules"; do
+    [[ -d "$dir" ]] || continue
+    while IFS= read -r -d '' l; do
+      [[ "$(readlink "$l")" == "$DOTFILES_DIR"/* ]] || continue
+      run rm -f "$l"
+      info "removido link quebrado: ${l/#$HOME/\~}"
+    done < <(find "$dir" -maxdepth 1 -xtype l -print0 2>/dev/null)
+  done
+  # pasta de módulos antiga ficou vazia
+  if [[ -d "$CONFIG/polybar/modules" ]] && [[ -z "$(ls -A "$CONFIG/polybar/modules" 2>/dev/null)" ]]; then
+    run rmdir "$CONFIG/polybar/modules"
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 📦 Pacotes do sistema
+# ─────────────────────────────────────────────────────────────────────────────
+PKGS_DEBIAN=(i3 polybar picom rofi dunst libnotify-bin kitty zsh tmux feh imagemagick
+  flameshot i3lock xss-lock dex x11-xserver-utils x11-xkb-utils playerctl brightnessctl
+  pulseaudio-utils pavucontrol yad jq git curl unzip fontconfig network-manager-gnome python3)
+PKGS_ARCH=(i3-wm polybar picom rofi dunst libnotify kitty zsh tmux feh imagemagick
+  flameshot i3lock xss-lock dex xorg-xrandr xorg-xset xorg-setxkbmap playerctl brightnessctl
+  libpulse pavucontrol yad jq git curl unzip fontconfig network-manager-applet python)
+PKGS_FEDORA=(i3 polybar picom rofi dunst libnotify kitty zsh tmux feh ImageMagick
+  flameshot i3lock xss-lock dex-autostart xrandr xset setxkbmap playerctl brightnessctl
+  pulseaudio-utils pavucontrol yad jq git curl unzip fontconfig network-manager-applet python3)
+
+missing_packages() {
+  local distro=$1 p
+  shift
+  for p in "$@"; do
+    case $distro in
+    debian) dpkg-query -W -f='${Status}' "$p" 2>/dev/null | grep -q "ok installed" || echo "$p" ;;
+    arch) pacman -Q "$p" >/dev/null 2>&1 || echo "$p" ;;
+    fedora) rpm -q "$p" >/dev/null 2>&1 || echo "$p" ;;
+    esac
+  done
+}
+
+install_packages() {
+  step "Pacotes do sistema"
+  local distro
+  distro=$(detect_distro)
+  local -a want=() missing=()
+  case $distro in
+  debian) want=("${PKGS_DEBIAN[@]}") ;;
+  arch) want=("${PKGS_ARCH[@]}") ;;
+  fedora) want=("${PKGS_FEDORA[@]}") ;;
+  *)
+    warn "distro não suportada ($distro). Instale à mão: ${PKGS_DEBIAN[*]}"
+    return 0
+    ;;
+  esac
+  mapfile -t missing < <(missing_packages "$distro" "${want[@]}")
+  if ((${#missing[@]} == 0)); then
+    ok "todos os ${#want[@]} pacotes já estão instalados"
+    return 0
+  fi
+  info "faltam (${distro}): ${missing[*]}"
+  if ((DRY_RUN)); then
+    run sudo "<gerenciador>" install "${missing[@]}"
+    return 0
+  fi
+  if [[ -t 0 ]]; then
+    read -r -p "  Instalar com sudo agora? [s/N] " ans
+    [[ "$ans" =~ ^[sSyY]$ ]] || {
+      warn "pulado. Rode depois: ./install.sh"
+      return 0
+    }
+  else
+    warn "sem terminal interativo: pacotes não instalados (rode de novo num terminal)"
+    return 0
+  fi
+  case $distro in
+  debian) sudo apt-get update -qq && sudo apt-get install -y "${missing[@]}" ;;
+  arch) sudo pacman -S --needed --noconfirm "${missing[@]}" ;;
+  fedora) sudo dnf install -y "${missing[@]}" ;;
+  esac
+  ok "pacotes instalados"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🐚 Oh My Zsh + plugins
+# ─────────────────────────────────────────────────────────────────────────────
 install_ohmyzsh() {
-    echo -e "${YELLOW}[3/12] Installing Oh My Zsh...${NC}"
-    if [ ! -d "$HOME_DIR/.oh-my-zsh" ]; then
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-        echo -e "${GREEN}✓ Oh My Zsh installed!${NC}\n"
+  step "Oh My Zsh e plugins"
+  if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    ok "Oh My Zsh já instalado"
+  else
+    # KEEP_ZSHRC/CHSH/RUNZSH: o instalador oficial não mexe no ~/.zshrc nem no shell.
+    run env KEEP_ZSHRC=yes CHSH=no RUNZSH=no sh -c \
+      "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  fi
+  local custom="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}" name url
+  for url in https://github.com/zsh-users/zsh-autosuggestions https://github.com/zsh-users/zsh-syntax-highlighting; do
+    name=$(basename "$url")
+    if [[ -d "$custom/plugins/$name" ]]; then
+      ok "$name já instalado"
     else
-        echo -e "${GREEN}✓ Oh My Zsh already installed.${NC}\n"
+      run git clone --quiet --depth 1 "$url" "$custom/plugins/$name"
     fi
+  done
 }
 
-# Function to install Zsh plugins
-install_zsh_plugins() {
-    echo -e "${YELLOW}[4/12] Installing Zsh plugins...${NC}"
-    ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME_DIR/.oh-my-zsh/custom}"
-    
-    # zsh-autosuggestions
-    if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
-        git clone --quiet https://github.com/zsh-users/zsh-autosuggestions \
-            "$ZSH_CUSTOM/plugins/zsh-autosuggestions" 2>/dev/null || true
-    fi
-    
-    # zsh-syntax-highlighting
-    if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
-        git clone --quiet https://github.com/zsh-users/zsh-syntax-highlighting.git \
-            "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" 2>/dev/null || true
-    fi
-    
-    echo -e "${GREEN}✓ Zsh plugins installed!${NC}\n"
+# ─────────────────────────────────────────────────────────────────────────────
+# 🔤 Fonte (uma só: JetBrainsMono Nerd Font)
+# ─────────────────────────────────────────────────────────────────────────────
+install_fonts() {
+  step "Fonte JetBrainsMono Nerd Font"
+  if fc-list 2>/dev/null | grep -q "JetBrainsMono Nerd Font"; then
+    ok "já instalada"
+    return 0
+  fi
+  local dir="$HOME/.local/share/fonts/JetBrainsMono" tmp
+  local url="https://github.com/ryanoasis/nerd-fonts/releases/download/${FONT_VERSION}/JetBrainsMono.zip"
+  if ((DRY_RUN)); then
+    run curl -fL "$url" "→ $dir"
+    return 0
+  fi
+  tmp=$(mktemp -d)
+  if curl -fsSL -o "$tmp/font.zip" "$url" && unzip -qo "$tmp/font.zip" -d "$dir"; then
+    fc-cache -f "$dir" >/dev/null 2>&1 || true
+    ok "instalada em ${dir/#$HOME/\~}"
+  else
+    warn "download falhou. Baixe em https://www.nerdfonts.com/font-downloads"
+  fi
+  rm -rf -- "$tmp"
 }
 
-# Function to install Python dependencies
-install_python_deps() {
-    echo -e "${YELLOW}[5/12] Installing Python dependencies...${NC}"
-    pip3 install --user --quiet colorthief 2>/dev/null || {
-        echo -e "${YELLOW}Warning: Could not install colorthief via pip.${NC}"
-        echo -e "${YELLOW}Try manually: pip3 install --user colorthief${NC}"
-    }
-    echo -e "${GREEN}✓ Python dependencies installed!${NC}\n"
+# ─────────────────────────────────────────────────────────────────────────────
+# 🔗 Configs
+# ─────────────────────────────────────────────────────────────────────────────
+install_links() {
+  step "Configs (links para o repo)"
+  clean_stale_links
+
+  link "$DOTFILES_DIR/i3/config" "$CONFIG/i3/config"
+  link_glob "$CONFIG/i3" "$DOTFILES_DIR"/i3/*.conf
+  link_glob "$CONFIG/i3/scripts" "$DOTFILES_DIR"/i3/scripts/*.sh
+
+  link_glob "$CONFIG/polybar" "$DOTFILES_DIR"/polybar/*.sh
+  link "$DOTFILES_DIR/picom/picom.conf" "$CONFIG/picom/picom.conf"
+  link "$DOTFILES_DIR/kitty/kitty.conf" "$CONFIG/kitty/kitty.conf"
+  link "$DOTFILES_DIR/dunst/dunstrc" "$CONFIG/dunst/dunstrc"
+  link "$DOTFILES_DIR/sworkstyle/config.toml" "$CONFIG/sworkstyle/config.toml"
+  link_glob "$CONFIG/rofi" "$DOTFILES_DIR"/rofi/*.rasi "$DOTFILES_DIR"/rofi/*.sh
+  link "$DOTFILES_DIR/tmux/tmux.conf" "$CONFIG/tmux/tmux.conf"
+  link "$DOTFILES_DIR/zsh/.zshenv" "$HOME/.zshenv"
+  link "$DOTFILES_DIR/vscode/vscode-custom.css" "$CONFIG/Code/User/vscode-custom.css"
+
+  ((DRY_RUN)) || chmod +x "$DOTFILES_DIR"/i3/scripts/*.sh "$DOTFILES_DIR"/polybar/*.sh "$DOTFILES_DIR"/rofi/*.sh "$DOTFILES_DIR"/wallpaper/generate.sh
 }
 
-# Function to install Claude Code (native installer -> ~/.local/bin/claude)
-install_claude_code() {
-    echo -e "${YELLOW}Installing Claude Code...${NC}"
-    if command_exists claude || [ -x "$HOME_DIR/.local/bin/claude" ]; then
-        echo -e "${GREEN}✓ Claude Code already installed (auto-updates sozinho).${NC}\n"
-        return 0
-    fi
-    curl -fsSL https://claude.ai/install.sh | bash || {
-        echo -e "${YELLOW}⚠ Could not install Claude Code.${NC}"
-        echo -e "${YELLOW}  Run manually: curl -fsSL https://claude.ai/install.sh | bash${NC}\n"
-        return 0
-    }
-    echo -e "${GREEN}✓ Claude Code installed! Run 'claude' to log in.${NC}\n"
+# polybar: config.ini é cópia (não link) porque troca ~ por caminho absoluto —
+# o exec dos módulos custom não expande ~ em todas as versões.
+install_polybar_config() {
+  step "Polybar"
+  local tmp dest="$CONFIG/polybar/config.ini"
+  tmp=$(mktemp)
+  sed "s|~/.config|$CONFIG|g" "$DOTFILES_DIR/polybar/config.ini" >"$tmp"
+  copy_file "$tmp" "$dest"
+  rm -f "$tmp"
 }
 
-# Function to create directories
-create_directories() {
-    echo -e "${YELLOW}[6/12] Creating configuration directories...${NC}"
-    # Symlinks em ~/.config/i3 ou ~/.config/polybar (ex.: repo estilo chupre) impedem mkdir -p.
-    local cfg_subdir
-    for cfg_subdir in i3 polybar picom kitty wallpaper dunst rofi Code sworkstyle; do
-        local p="${HOME_DIR}/.config/${cfg_subdir}"
-        if [[ -L "$p" ]]; then
-            echo -e "${YELLOW}  • Removendo symlink antigo: $p${NC}"
-            rm -f "$p"
-        fi
-    done
-    mkdir -p "$HOME_DIR/.config/i3/scripts"
-    mkdir -p "$HOME_DIR/.config/polybar/modules"
-    mkdir -p "$HOME_DIR/.config/picom"
-    mkdir -p "$HOME_DIR/.config/kitty"
-    mkdir -p "$HOME_DIR/.config/wallpaper"
-    mkdir -p "$HOME_DIR/.local/share/walls"
-    mkdir -p "$HOME_DIR/.config/dunst"
-    mkdir -p "$HOME_DIR/.config/rofi"
-    mkdir -p "$HOME_DIR/.config/Code/User"
-    mkdir -p "$HOME_DIR/.config/sworkstyle"
-    echo -e "${GREEN}✓ Directories created!${NC}\n"
+# ~/.zshrc é um arquivo local que carrega o do repo. Assim CLIs que editam o
+# ~/.zshrc com sed -i (quebrando symlinks) continuam funcionando, e o que é só
+# desta máquina não vai pro repo público.
+install_zshrc() {
+  step "zsh"
+  local rc="$HOME/.zshrc" marker="# dotfiles:zshrc"
+  local line="[[ -r \"$DOTFILES_DIR/zsh/.zshrc\" ]] && source \"$DOTFILES_DIR/zsh/.zshrc\" $marker"
+  if [[ -f "$rc" && ! -L "$rc" ]] && grep -qF "$marker" "$rc"; then
+    ok "~/.zshrc já carrega o do repo"
+    return 0
+  fi
+  local old=""
+  if [[ -L "$rc" ]]; then
+    backup "$rc"
+  elif [[ -f "$rc" ]]; then
+    old="$BACKUP_DIR/.zshrc"
+    backup "$rc"
+  fi
+  if ((DRY_RUN)); then
+    run "escrever ~/.zshrc local (source do repo + seção da máquina)"
+    return 0
+  fi
+  cat >"$rc" <<EOF
+# ~/.zshrc local — NÃO versionado. A config compartilhada vem do repo:
+$line
+
+# ── Só desta máquina (CLIs que se instalam aqui, PATHs locais, segredos via env) ──
+EOF
+  ok "~/.zshrc local criado"
+  if [[ -n "$old" ]]; then
+    warn "o ~/.zshrc anterior está em ${old/#$HOME/\~}"
+    warn "copie de lá o que for só desta máquina (funções de CLIs, exports) para o fim do ~/.zshrc"
+  fi
+  CHANGED=1
+}
+
+install_tmux_legacy_note() {
+  if [[ -f "$HOME/.tmux.conf" ]]; then
+    warn "~/.tmux.conf existe e tem prioridade sobre ~/.config/tmux/tmux.conf — avalie removê-lo"
+  fi
+}
+
+# git: inclui as preferências do repo sem tocar em nome, e-mail ou assinatura.
+install_git() {
+  step "git"
+  local inc="$DOTFILES_DIR/git/gitconfig"
+  if git config --global --get-all include.path 2>/dev/null | grep -qxF "$inc"; then
+    ok "~/.gitconfig já inclui git/gitconfig"
+  else
+    run git config --global --add include.path "$inc"
+    ok "include adicionado ao ~/.gitconfig (identidade e assinatura continuam locais)"
+  fi
+}
+
+# 🖼️ Wallpaper padrão (gerado por wallpaper/generate.sh) + escolha atual preservada.
+install_wallpaper() {
+  step "Wallpaper"
+  copy_file "$DOTFILES_DIR/wallpaper/dirt-contours.jpg" "$CONFIG/wallpaper/dirt-contours.jpg"
+  local state="$CONFIG/polybar/.wallpaper_state"
+  if [[ -f "$state" ]]; then
+    info "escolha atual mantida ($(sed 's/.*"path": *"\([^"]*\)".*/\1/' "$state" | sed "s|$HOME|~|"))"
+    info "para usar o novo: clique no ícone de wallpaper da polybar ou apague $state"
+  else
+    ok "dirt-contours.jpg será o fundo padrão"
+  fi
 }
 
 optional_clone_dharmx_walls() {
-    local dest="${HOME_DIR}/.local/share/walls"
-    if [[ -e "${dest}/.git" ]] || [[ -d "${dest}/.git" ]]; then
-        echo -e "${GREEN}✓ dharmx/walls já existe em ${dest}${NC}\n"
-        return 0
-    fi
-
-    local do_clone=0
-    if [[ "${INSTALL_DHARMX_WALLS:-}" == "1" ]]; then
-        do_clone=1
-    elif [[ -t 0 ]] && [[ "${INSTALL_DHARMX_WALLS:-}" != "0" ]]; then
-        echo -ne "${YELLOW}Clonar dharmx/walls para ~/.local/share/walls? (repo grande) [s/N] ${NC}"
-        read -r _wall_ans
-        [[ "${_wall_ans:-}" =~ ^[sSyY]$ ]] && do_clone=1
-    fi
-
-    [[ "$do_clone" -eq 1 ]] || return 0
-
-    if ! command_exists git; then
-        echo -e "${YELLOW}⚠ git não encontrado.${NC}\n"
-        return 0
-    fi
-
-    echo -e "${BLUE}Cloning https://github.com/dharmx/walls.git …${NC}"
-    if git clone --depth 1 https://github.com/dharmx/walls.git "$dest"; then
-        echo -e "${GREEN}✓ dharmx/walls clonado em ${dest}${NC}\n"
-    else
-        echo -e "${YELLOW}⚠ Clone falhou. Manual: git clone https://github.com/dharmx/walls.git ${dest}${NC}\n"
-    fi
+  local dest="$HOME/.local/share/walls"
+  [[ -d "$dest/.git" ]] && return 0
+  [[ "${INSTALL_DHARMX_WALLS:-0}" == "1" ]] || return 0
+  step "Coleção dharmx/walls (opcional)"
+  run git clone --depth 1 https://github.com/dharmx/walls.git "$dest"
 }
 
 install_vscode_user_settings() {
-    local repo="$DOTFILES_DIR/vscode/settings.json"
-    local dest="$HOME_DIR/.config/Code/User/settings.json"
-    [[ -f "$repo" ]] || return 0
-    echo -e "${BLUE}VS Code: ~/.config/Code/User/settings.json (tema polybar + URI do CSS)…${NC}"
-    INSTALL_HOME="$HOME_DIR" INSTALL_DOTFILES="$DOTFILES_DIR" python3 << 'PY'
-import json
-import os
-import re
+  local repo="$DOTFILES_DIR/vscode/settings.json"
+  local dest="$CONFIG/Code/User/settings.json"
+  [[ -f "$repo" ]] || return 0
+  step "VS Code"
+  if ((DRY_RUN)); then
+    run "gerar $dest a partir de vscode/settings.json"
+    return 0
+  fi
+  local tmp
+  tmp=$(mktemp)
+  INSTALL_CSS="$CONFIG/Code/User/vscode-custom.css" python3 - "$repo" "$tmp" <<'PY'
+import json, os, re, sys
 from pathlib import Path
 
-home = Path(os.environ["INSTALL_HOME"])
-repo = Path(os.environ["INSTALL_DOTFILES"]) / "vscode" / "settings.json"
-dest = home / ".config/Code/User/settings.json"
-css = home / ".config/Code/User/vscode-custom.css"
-uri = css.resolve().as_uri()
-
-def load_jsonc(path: Path):
-    text = path.read_text(encoding="utf-8")
-    lines = []
-    for line in text.splitlines():
-        if re.match(r"^\s*//", line):
-            continue
-        lines.append(line)
-    text = "\n".join(lines)
-    text = re.sub(r",(\s*[\]}])", r"\1", text)
-    return json.loads(text)
-
-dest.parent.mkdir(parents=True, exist_ok=True)
-data = load_jsonc(repo)
-data["vscode_custom_css.imports"] = [uri]
-dest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+repo, out = Path(sys.argv[1]), Path(sys.argv[2])
+text = "\n".join(l for l in repo.read_text(encoding="utf-8").splitlines() if not re.match(r"^\s*//", l))
+data = json.loads(re.sub(r",(\s*[\]}])", r"\1", text))
+data["vscode_custom_css.imports"] = [Path(os.environ["INSTALL_CSS"]).resolve().as_uri()]
+out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
-    echo -e "${GREEN}✓ VS Code settings escritos.${NC}"
-    echo -e "${YELLOW}  Extensão: Custom CSS and JS Loader → se «permission denied» ao ativar:${NC}"
-    echo -e "${YELLOW}    ./vscode/fix-custom-css-perms.sh — se VS Code pedir «admin privileges», corre isto (não abras Code como root)${NC}"
+  copy_file "$tmp" "$dest"
+  rm -f "$tmp"
 }
 
-# Function to configure Claude Code (status line, hooks, CLAUDE.md global)
+# 🤖 Claude Code: status line, hooks, skills, agentes e CLAUDE.md global.
 setup_claude_config() {
-    echo -e "${BLUE}Claude Code: status line, notificações e CLAUDE.md…${NC}"
-    local dest="$HOME_DIR/.claude"
-    mkdir -p "$dest/hooks"
-    ln -sf "$DOTFILES_DIR/claude/statusline.sh" "$dest/statusline.sh"
-    ln -sf "$DOTFILES_DIR/claude/hooks/notify.sh" "$dest/hooks/notify.sh"
-    ln -sf "$DOTFILES_DIR/claude/CLAUDE.md" "$dest/CLAUDE.md"
-    mkdir -p "$dest/themes"
-    ln -sf "$DOTFILES_DIR/claude/themes/"*.json "$dest/themes/"
-    # skills, subagentes e agendador de jobs
-    mkdir -p "$dest/skills" "$dest/agents" "$HOME_DIR/.local/bin" "$HOME_DIR/claude-out"
-    local sk
-    for sk in "$DOTFILES_DIR/claude/skills/"*/; do
-        ln -sfn "${sk%/}" "$dest/skills/$(basename "$sk")"
-    done
-    ln -sf "$DOTFILES_DIR/claude/agents/"*.md "$dest/agents/"
-    ln -sf "$DOTFILES_DIR/claude/bin/claude-job" "$HOME_DIR/.local/bin/claude-job"
-    chmod +x "$DOTFILES_DIR/claude/statusline.sh" "$DOTFILES_DIR/claude/hooks/notify.sh" "$DOTFILES_DIR/claude/bin/claude-job"
-    # settings.json é mesclado (não symlink): o Claude Code também grava nele
-    # (permissões, /config) e essas mudanças locais não devem sujar o repo.
-    local settings="$dest/settings.json"
-    [ -f "$settings" ] || echo '{}' > "$settings"
-    local tmp
-    tmp=$(mktemp)
-    jq -s '.[0] * .[1]' "$settings" "$DOTFILES_DIR/claude/settings.json" > "$tmp" && mv "$tmp" "$settings"
-    echo -e "${GREEN}✓ Claude Code configurado.${NC}"
+  step "Claude Code"
+  local dest="$HOME/.claude" f
+  link "$DOTFILES_DIR/claude/statusline.sh" "$dest/statusline.sh"
+  link "$DOTFILES_DIR/claude/hooks/notify.sh" "$dest/hooks/notify.sh"
+  link "$DOTFILES_DIR/claude/CLAUDE.md" "$dest/CLAUDE.md"
+  link_glob "$dest/themes" "$DOTFILES_DIR"/claude/themes/*.json
+  link_glob "$dest/agents" "$DOTFILES_DIR"/claude/agents/*.md
+  for f in "$DOTFILES_DIR"/claude/skills/*/; do
+    link "${f%/}" "$dest/skills/$(basename "$f")"
+  done
+  link "$DOTFILES_DIR/claude/bin/claude-job" "$HOME/.local/bin/claude-job"
+  ((DRY_RUN)) || mkdir -p "$HOME/claude-out"
+  # settings.json é mesclado (não link): o Claude Code também grava nele.
+  local settings="$dest/settings.json" tmp
+  if ((DRY_RUN)); then
+    run "mesclar claude/settings.json em $settings (jq)"
+    return 0
+  fi
+  have jq || {
+    warn "jq não encontrado: settings.json do Claude não mesclado"
+    return 0
+  }
+  [[ -f "$settings" ]] || echo '{}' >"$settings"
+  tmp=$(mktemp)
+  jq -s '.[0] * .[1]' "$settings" "$DOTFILES_DIR/claude/settings.json" >"$tmp"
+  if cmp -s "$tmp" "$settings"; then
+    rm -f "$tmp"
+    ok "settings.json em dia"
+  else
+    cp "$settings" "$settings.pre-dotfiles"
+    mv "$tmp" "$settings"
+    ok "settings.json mesclado (anterior em settings.json.pre-dotfiles)"
+  fi
 }
 
-# Function to create symlinks
-create_symlinks() {
-    echo -e "${YELLOW}[7/12] Creating symbolic links...${NC}"
-    
-    # i3 configuration files
-    ln -sf "$DOTFILES_DIR/i3/config" "$HOME_DIR/.config/i3/config"
-    ln -sf "$DOTFILES_DIR/i3/"*.conf "$HOME_DIR/.config/i3/" 2>/dev/null || true
-    ln -sf "$DOTFILES_DIR/i3/scripts/"*.sh "$HOME_DIR/.config/i3/scripts/" 2>/dev/null || true
-    
-    # polybar — config.ini é cópia (não symlink): install.sh substitui ~/.config por caminho
-    # absoluto; symlink faria o sed alterar o ficheiro no repositório.
-    cp -f "$DOTFILES_DIR/polybar/config.ini" "$HOME_DIR/.config/polybar/config.ini"
-    chmod 644 "$HOME_DIR/.config/polybar/config.ini"
-    ln -sf "$DOTFILES_DIR/polybar/launch.sh" "$HOME_DIR/.config/polybar/launch.sh"
-    shopt -s nullglob
-    for pb_script in "$DOTFILES_DIR/polybar"/*.sh; do
-        [[ "$(basename "$pb_script")" == "launch.sh" ]] && continue
-        ln -sf "$pb_script" "$HOME_DIR/.config/polybar/$(basename "$pb_script")"
-    done
-    shopt -u nullglob
-    ln -sf "$DOTFILES_DIR/polybar/modules/"*.sh "$HOME_DIR/.config/polybar/modules/" 2>/dev/null || true
-    ln -sf "$DOTFILES_DIR/polybar/modules/"*.py "$HOME_DIR/.config/polybar/modules/" 2>/dev/null || true
-    
-    # picom
-    ln -sf "$DOTFILES_DIR/picom/picom.conf" "$HOME_DIR/.config/picom/picom.conf"
-    
-    # kitty
-    ln -sf "$DOTFILES_DIR/kitty/kitty.conf" "$HOME_DIR/.config/kitty/kitty.conf"
-    
-    # dunst
-    ln -sf "$DOTFILES_DIR/dunst/dunstrc" "$HOME_DIR/.config/dunst/dunstrc"
-
-    # sworkstyle (renomeia workspaces do i3 com icones dos apps)
-    ln -sf "$DOTFILES_DIR/sworkstyle/config.toml" "$HOME_DIR/.config/sworkstyle/config.toml"
-
-    # rofi
-    ln -sf "$DOTFILES_DIR/rofi/config.rasi" "$HOME_DIR/.config/rofi/config.rasi"
-    ln -sf "$DOTFILES_DIR/rofi/"*.rasi "$HOME_DIR/.config/rofi/" 2>/dev/null || true
-    ln -sf "$DOTFILES_DIR/rofi/"*.sh "$HOME_DIR/.config/rofi/" 2>/dev/null || true
-    
-    # vscode (CSS + settings.json com tema + URI para Custom CSS Loader)
-    ln -sf "$DOTFILES_DIR/vscode/vscode-custom.css" "$HOME_DIR/.config/Code/User/vscode-custom.css"
-    chmod a+r "$DOTFILES_DIR/vscode/vscode-custom.css" 2>/dev/null || true
-    chmod a+r "$HOME_DIR/.config/Code/User/vscode-custom.css" 2>/dev/null || true
-    install_vscode_user_settings
-    
-    # zsh
-    ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME_DIR/.zshrc"
-    ln -sf "$DOTFILES_DIR/zsh/.zshenv" "$HOME_DIR/.zshenv"
-
-    # claude code
-    setup_claude_config
-    
-    # wallpapers - copy all wallpapers
-    echo -e "${BLUE}Copying wallpapers...${NC}"
-    cp -r "$DOTFILES_DIR/wallpaper/"* "$HOME_DIR/.config/wallpaper/" 2>/dev/null || true
-    
-    # Set default wallpaper
-    if [ -f "$DOTFILES_DIR/wallpaper/wallpaper.jpg" ]; then
-        ln -sf "$HOME_DIR/.config/wallpaper/wallpaper.jpg" "$HOME_DIR/.config/wallpaper/current_wallpaper.jpg"
-    else
-        # Try to find any image file in wallpaper directory
-        WALLPAPER_FILE=$(find "$HOME_DIR/.config/wallpaper" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" \) 2>/dev/null | head -1)
-        if [ -n "$WALLPAPER_FILE" ]; then
-            ln -sf "$WALLPAPER_FILE" "$HOME_DIR/.config/wallpaper/current_wallpaper.jpg"
-        fi
-    fi
-    
-    echo -e "${GREEN}✓ Symbolic links created!${NC}\n"
+install_claude_code() {
+  step "Claude Code (binário)"
+  if have claude || [[ -x "$HOME/.local/bin/claude" ]]; then
+    ok "já instalado (atualiza sozinho)"
+    return 0
+  fi
+  run sh -c "curl -fsSL https://claude.ai/install.sh | bash" || warn "falhou: curl -fsSL https://claude.ai/install.sh | bash"
 }
 
-# Function to fix hardcoded paths
-fix_hardcoded_paths() {
-    echo -e "${YELLOW}[8/12] Fixing hardcoded paths...${NC}"
-    
-    # Fix paths in polybar config (~ não é fiável no exec do custom/script em todas as versões)
-    if [ -f "$HOME_DIR/.config/polybar/config.ini" ]; then
-        sed -i "s|~/.config|$HOME_DIR/.config|g" "$HOME_DIR/.config/polybar/config.ini" 2>/dev/null || true
-        sed -i "s|/home/[^/]*/.config|$HOME_DIR/.config|g" "$HOME_DIR/.config/polybar/config.ini" 2>/dev/null || true
-        # Forçar caminhos absolutos no [module/date] (exec + click; evita ENOENT ao clicar)
-        awk -v home="$HOME_DIR" '
-            /^\[module\/date\]/ { in_date=1 }
-            /^\[/ && !/^\[module\/date\]/ { in_date=0 }
-            in_date && /^exec = / { print "exec = " home "/.config/polybar/date.sh"; next }
-            in_date && /^click-left = / { print "click-left = " home "/.config/polybar/calendar.sh"; next }
-            { print }
-        ' "$HOME_DIR/.config/polybar/config.ini" > "$HOME_DIR/.config/polybar/config.ini.tmp" &&
-            mv "$HOME_DIR/.config/polybar/config.ini.tmp" "$HOME_DIR/.config/polybar/config.ini"
-    fi
-    
-    # Fix paths in Python scripts
-    find "$HOME_DIR/.config/polybar/modules" -name "*.py" -type f -exec sed -i "s|/home/[^/]*/.config|$HOME_DIR/.config|g" {} \; 2>/dev/null || true
-    
-    echo -e "${GREEN}✓ Paths fixed!${NC}\n"
-}
-
-# Function to make scripts executable
-make_executable() {
-    echo -e "${YELLOW}[9/12] Setting executable permissions...${NC}"
-    chmod +x "$HOME_DIR/.config/polybar/launch.sh" 2>/dev/null || true
-    chmod +x "$HOME_DIR/.config/polybar/"*.sh 2>/dev/null || true
-    chmod +x "$HOME_DIR/.config/polybar/modules/"*.sh 2>/dev/null || true
-    chmod +x "$HOME_DIR/.config/rofi/"*.sh 2>/dev/null || true
-    chmod +x "$HOME_DIR/.config/polybar/modules/"*.py 2>/dev/null || true
-    chmod +x "$HOME_DIR/.config/i3/scripts/"*.sh 2>/dev/null || true
-    echo -e "${GREEN}✓ Permissions set!${NC}\n"
-}
-
-# Function to install AIC (central de sessões do Claude Code, github.com/viniciuscg/AIC)
+# AIC — central de sessões do Claude Code (github.com/viniciuscg/AIC)
 install_aic() {
-    echo -e "${YELLOW}[11/12] Installing AIC...${NC}"
-    local aic_dir="$HOME_DIR/AIC"
-    if [ -d "$aic_dir/.git" ]; then
-        git -C "$aic_dir" pull --ff-only || {
-            echo -e "${YELLOW}⚠ git pull falhou em $aic_dir (mudanças locais?). Seguindo com o que já está lá.${NC}"
-        }
-    else
-        git clone git@github.com:viniciuscg/AIC.git "$aic_dir" || {
-            echo -e "${YELLOW}⚠ Could not clone AIC (chave SSH no GitHub?).${NC}"
-            echo -e "${YELLOW}  Run manually: git clone git@github.com:viniciuscg/AIC.git ~/AIC && ~/AIC/install.sh${NC}\n"
-            return 0
-        }
-    fi
-    # config.toml é copiado só se não existir: o AIC grava nele pelas Configurações
-    # (e a gravação troca o arquivo, o que quebraria um symlink).
-    mkdir -p "$HOME_DIR/.config/aic"
-    [ -f "$HOME_DIR/.config/aic/config.toml" ] || cp "$DOTFILES_DIR/aic/config.toml" "$HOME_DIR/.config/aic/config.toml"
-    "$aic_dir/install.sh" || {
-        echo -e "${YELLOW}⚠ AIC install.sh falhou. Run manually: ~/AIC/install.sh${NC}\n"
-        return 0
+  step "AIC"
+  local aic_dir="$HOME/AIC"
+  if [[ -d "$aic_dir/.git" ]]; then
+    run git -C "$aic_dir" pull --ff-only || warn "git pull falhou em ~/AIC (mudanças locais?)"
+  else
+    run git clone git@github.com:viniciuscg/AIC.git "$aic_dir" || {
+      warn "clone falhou (chave SSH no GitHub?). Manual: git clone git@github.com:viniciuscg/AIC.git ~/AIC"
+      return 0
     }
-    echo -e "${GREEN}✓ AIC installed! Abra com: aic${NC}\n"
+  fi
+  # config.toml copiado só se não existir: o AIC grava nele pelas Configurações.
+  [[ -f "$CONFIG/aic/config.toml" ]] || copy_file "$DOTFILES_DIR/aic/config.toml" "$CONFIG/aic/config.toml"
+  run "$aic_dir/install.sh" || warn "~/AIC/install.sh falhou; rode à mão"
 }
 
-# Function to configure system settings
-configure_system() {
-    echo -e "${YELLOW}[12/12] Configuring system settings...${NC}"
-    
-    # Set primary monitor
-    if command_exists xrandr; then
-        xrandr --output DP-1 --primary 2>/dev/null || {
-            echo -e "${YELLOW}⚠ Could not set DP-1 as primary monitor${NC}"
-            echo -e "${YELLOW}  Run manually: xrandr --output DP-1 --primary${NC}"
-        }
-        
-        # Rotate DP-1-6 monitor (inverted)
-        xrandr --output DP-1-6 --rotate inverted 2>/dev/null || {
-            echo -e "${YELLOW}⚠ Could not rotate DP-1-6 monitor${NC}"
-            echo -e "${YELLOW}  Run manually: xrandr --output DP-1-6 --rotate inverted${NC}"
-        }
-    fi
-    
-    # Configure keyboard layout (pt-br)
-    if command_exists setxkbmap; then
-        setxkbmap br 2>/dev/null || {
-            echo -e "${YELLOW}⚠ Could not set keyboard layout to pt-br${NC}"
-            echo -e "${YELLOW}  Run manually: setxkbmap br${NC}"
-        }
-    fi
-    
-    echo -e "${GREEN}✓ System settings configured!${NC}\n"
+change_shell() {
+  [[ "$(basename "${SHELL:-}")" == "zsh" ]] && return 0
+  have zsh || return 0
+  step "Shell padrão"
+  if [[ -t 0 ]] && ((!DRY_RUN)); then
+    info "a senha pedida é a do seu usuário"
+    chsh -s "$(command -v zsh)" || warn "falhou. Manual: chsh -s $(command -v zsh)"
+  else
+    warn "rode: chsh -s $(command -v zsh)"
+  fi
 }
 
-# Function to install fonts
-install_fonts() {
-    echo -e "${YELLOW}[10/12] Installing Nerd Fonts (JetBrainsMono, FiraCode, VictorMono)...${NC}"
-    DISTRO=$(detect_distro)
-    FONT_DIR="$HOME_DIR/.local/share/fonts"
-    mkdir -p "$FONT_DIR"
-    
-    case $DISTRO in
-        arch|manjaro)
-            if command_exists yay; then
-                yay -S --noconfirm nerd-fonts-jetbrains-mono nerd-fonts-fira-code nerd-fonts-victor-mono 2>/dev/null && \
-                echo -e "${GREEN}✓ Fonts installed via yay!${NC}" || \
-                download_fonts_manual
-            elif command_exists paru; then
-                paru -S --noconfirm nerd-fonts-jetbrains-mono nerd-fonts-fira-code nerd-fonts-victor-mono 2>/dev/null && \
-                echo -e "${GREEN}✓ Fonts installed via paru!${NC}" || \
-                download_fonts_manual
-            else
-                download_fonts_manual
-            fi
-            ;;
-        ubuntu|debian)
-            if sudo apt install -y fonts-jetbrains-mono 2>/dev/null; then
-                echo -e "${GREEN}✓ JetBrainsMono installed via apt!${NC}"
-            fi
-            download_fonts_manual  # Download Nerd Font versions
-            ;;
-        *)
-            download_fonts_manual
-            ;;
-    esac
-    
-    # Update font cache
-    fc-cache -fv "$FONT_DIR" 2>/dev/null || true
-    echo -e "${GREEN}✓ Font cache updated!${NC}\n"
+summary() {
+  step "Pronto"
+  if [[ -d "$BACKUP_DIR" ]]; then
+    info "backups em ${BACKUP_DIR/#$HOME/\~}"
+  fi
+  if ((DRY_RUN)); then
+    info "nada foi alterado (--dry-run)"
+    return 0
+  fi
+  if ((CHANGED)); then
+    info "aplicar sem sair da sessão:"
+    info "  i3 + polybar + wallpaper  →  Mod+Shift+r"
+    info "  dunst                     →  killall dunst (o dbus sobe de novo)"
+    info "  kitty                     →  ctrl+shift+F5 em cada janela"
+    info "  tmux                      →  prefixo (Ctrl+a) + r"
+  else
+    ok "tudo já estava em dia"
+  fi
 }
 
-# Function to download fonts manually
-download_fonts_manual() {
-    FONT_DIR="$HOME_DIR/.local/share/fonts"
-    TEMP_DIR=$(mktemp -d)
-    FONT_VERSION="v3.1.1"
-    
-    if ! command_exists wget && ! command_exists curl; then
-        echo -e "${RED}wget or curl required to download fonts.${NC}"
-        echo -e "${YELLOW}Download manually from: https://www.nerdfonts.com/font-downloads${NC}"
-        rm -rf "$TEMP_DIR"
-        return 1
-    fi
-    
-    # Download function
-    download_font() {
-        local font_name=$1
-        local url="https://github.com/ryanoasis/nerd-fonts/releases/download/${FONT_VERSION}/${font_name}.zip"
-        local zip_file="$TEMP_DIR/${font_name}.zip"
-        
-        echo -e "${YELLOW}Downloading ${font_name} Nerd Font...${NC}"
-        if command_exists wget; then
-            wget -q --show-progress -O "$zip_file" "$url" 2>/dev/null || \
-            wget -q -O "$zip_file" "$url" || return 1
-        elif command_exists curl; then
-            curl -L -o "$zip_file" "$url" || return 1
-        fi
-        
-        if [ -f "$zip_file" ]; then
-            local font_subdir="$FONT_DIR/${font_name}"
-            mkdir -p "$font_subdir"
-            unzip -q -o "$zip_file" -d "$font_subdir" 2>/dev/null || {
-                echo -e "${YELLOW}Installing unzip...${NC}"
-                case $(detect_distro) in
-                    ubuntu|debian) sudo apt install -y unzip ;;
-                    arch|manjaro) sudo pacman -S --noconfirm unzip ;;
-                    fedora) sudo dnf install -y unzip ;;
-                esac
-                unzip -q -o "$zip_file" -d "$font_subdir"
-            }
-            echo -e "${GREEN}✓ ${font_name} installed!${NC}"
-            rm -f "$zip_file"
-        else
-            echo -e "${YELLOW}⚠ Failed to download ${font_name}${NC}"
-            return 1
-        fi
-    }
-    
-    # Download all fonts
-    download_font "JetBrainsMono"
-    download_font "FiraCode"
-    download_font "VictorMono"
-    
-    rm -rf "$TEMP_DIR"
-    echo -e "${GREEN}✓ All fonts downloaded and installed!${NC}"
-}
-
-# Main function
 main() {
-    # ./install.sh --claude  → aplica só a configuração do Claude Code
-    if [[ "${1:-}" == "--claude" ]]; then
-        setup_claude_config
-        return 0
-    fi
+  local only_claude=0
+  while (($#)); do
+    case $1 in
+    --dry-run) DRY_RUN=1 ;;
+    --links) LINKS_ONLY=1 ;;
+    --no-packages) SKIP_PACKAGES=1 ;;
+    --claude) only_claude=1 ;;
+    -h | --help)
+      usage
+      return 0
+      ;;
+    *) die "opção desconhecida: $1 (veja --help)" ;;
+    esac
+    shift
+  done
 
-    # Check if running as root
-    if [ "$EUID" -eq 0 ]; then
-        echo -e "${RED}Please do not run this script as root!${NC}"
-        exit 1
-    fi
-    
-    # Backup existing configurations
-    backup_existing
-    
-    # Install system dependencies
-    install_dependencies
-    
-    # Install Oh My Zsh
+  ((EUID != 0)) || die "não rode como root (o script pede sudo só quando precisa)"
+
+  if ((only_claude)); then
+    setup_claude_config
+    summary
+    return 0
+  fi
+
+  printf '%s%s dotfiles%s %s%s%s\n' "$C_ACC" "$C_B" "$C_RST" "$C_DIM" "$DOTFILES_DIR" "$C_RST"
+  ((DRY_RUN)) && warn "modo --dry-run: nada será alterado"
+
+  if ((!LINKS_ONLY)); then
+    ((SKIP_PACKAGES)) || install_packages
     install_ohmyzsh
-    
-    # Install Zsh plugins
-    install_zsh_plugins
-    
-    # Install Python dependencies
-    install_python_deps
-
-    # Install Claude Code
-    install_claude_code
-    
-    # Create directories
-    create_directories
-
-    optional_clone_dharmx_walls
-    
-    # Create symlinks
-    create_symlinks
-    
-    # Fix hardcoded paths
-    fix_hardcoded_paths
-    
-    # Make scripts executable
-    make_executable
-    
-    # Install fonts
     install_fonts
-    
-    # Install AIC
+    install_claude_code
+  fi
+
+  install_links
+  install_polybar_config
+  install_zshrc
+  install_tmux_legacy_note
+  install_git
+  install_wallpaper
+  install_vscode_user_settings
+  setup_claude_config
+
+  if ((!LINKS_ONLY)); then
+    optional_clone_dharmx_walls
     install_aic
-    
-    # Configure system settings
-    configure_system
-    
-    # Change shell to zsh if not already (não redireccionar stderr: chsh pede palavra-passe no TTY)
-    if [ "$(basename "${SHELL:-}")" != "zsh" ] && command -v zsh >/dev/null 2>&1; then
-        echo -e "${YELLOW}Changing default shell to zsh...${NC}"
-        echo -e "${BLUE}Se pedir «Password», é a do teu utilizador (sudo não serve).${NC}"
-        if [ -t 0 ]; then
-            chsh -s "$(command -v zsh)" || {
-                echo -e "${YELLOW}Could not change shell (cancelaste ou falhou).${NC}"
-                echo -e "${YELLOW}Run manually: chsh -s $(command -v zsh)${NC}"
-            }
-        else
-            echo -e "${YELLOW}Sem terminal interactivo — não foi pedido chsh aqui.${NC}"
-            echo -e "${YELLOW}Run manually: chsh -s $(command -v zsh)${NC}"
-        fi
-    fi
-    
-    echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║   Installation Complete!             ║${NC}"
-    echo -e "${GREEN}╚════════════════════════════════════════╝${NC}\n"
-    
-    echo -e "${YELLOW}Next steps:${NC}"
-    echo -e "  1. Logout and login again (or restart i3: Mod+Shift+R)"
-    echo -e "  2. Configure your monitors in i3/config and workspaces.conf if needed"
-    echo -e "  3. All wallpapers copied to ~/.config/wallpaper/"
-    echo -e "  4. Wallpapers extras: INSTALL_DHARMX_WALLS=1 ./install.sh (ou clone manual para ~/.local/share/walls)"
-    echo -e "\n${YELLOW}Useful shortcuts:${NC}"
-    echo -e "  • Print: Full screenshot"
-    echo -e "  • Mod+Print: Interactive screenshot (flameshot)"
-    echo -e "  • Mod+V: Clipboard menu (clipmenu)"
-    echo -e "  • Mod+Return: Terminal"
-    echo -e "  • Mod+D: Application launcher (rofi)"
-    echo -e "  • Super+D: Rofi launcher (same as Mod+D)"
-    echo -e "\n${YELLOW}System configuration:${NC}"
-    echo -e "  • Primary monitor: DP-1 (configured)"
-    echo -e "  • Monitor DP-1-6: Rotated inverted"
-    echo -e "  • Keyboard layout: pt-br (configured)"
-    echo -e "  • Rofi theme: Clean minimal dark"
-    echo -e "  • VS Code: tema tipo terminal + vscode-custom.css (ext. Custom CSS and JS Loader)"
-    echo -e "  • All wallpapers installed"
-    echo -e "\n${YELLOW}Backup saved at: $BACKUP_DIR${NC}\n"
+    change_shell
+  fi
+
+  summary
 }
 
-# Execute main function
 main "$@"

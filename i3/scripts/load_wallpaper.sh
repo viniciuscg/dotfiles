@@ -4,7 +4,7 @@
 # monitores — importante após mudanças de xrandr (ver i3/scripts/monitor.sh).
 
 STATE_FILE="$HOME/.config/polybar/.wallpaper_state"
-DEFAULT_WALLPAPER="$HOME/.config/wallpaper/wallpaper.jpg"
+DEFAULT_WALLPAPER="$HOME/.config/wallpaper/dirt-contours.jpg"
 LIB="$HOME/.config/polybar/wallpaper_lib.sh"
 
 target=""

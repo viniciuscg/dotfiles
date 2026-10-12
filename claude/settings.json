@@ -1,5 +1,5 @@
 {
-  "theme": "custom:minimal",
+  "theme": "custom:dirt",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",

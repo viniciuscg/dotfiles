@@ -1,6 +1,8 @@
+@import "colors.rasi"
+
 * {
-    background-color: #1a1a1a;
-    text-color:       #cccccc;
+    background-color: @bg;
+    text-color:       @fg;
     font:             "JetBrainsMono Nerd Font 10";
 }
 
@@ -9,10 +11,10 @@ configuration {
 }
 
 window {
-    width:            180px;
-    background-color: #1a1a1a;
+    width:            200px;
+    background-color: @bg;
     border:           1px;
-    border-color:     #e8e8e8;
+    border-color:     @accent;
     border-radius:    8px;
     location:         northeast;
     x-offset:         -20;
@@ -21,37 +23,37 @@ window {
 
 mainbox {
     padding:          4px;
-    background-color: #1a1a1a;
+    background-color: @bg;
     children:         [ listview ];
 }
 
 listview {
     lines:            4;
     scrollbar:        false;
-    background-color: #1a1a1a;
+    background-color: @bg;
     spacing:          2px;
 }
 
 element {
     padding:          8px 12px;
-    border-radius:    6px;
-    background-color: #1a1a1a;
+    border-radius:    4px;
+    background-color: @bg;
     cursor:           pointer;
 }
 
 element normal.normal {
-    background-color: #1a1a1a;
-    text-color:       #cccccc;
+    background-color: @bg;
+    text-color:       @fg;
 }
 
 element hover {
-    background-color: #2a2a2a;
-    text-color:       #e8e8e8;
+    background-color: @bg-sel;
+    text-color:       @fg-bright;
 }
 
 element selected.normal {
-    background-color: #2a2a2a;
-    text-color:       #e8e8e8;
+    background-color: @bg-sel;
+    text-color:       @fg-bright;
 }
 
 element-text {

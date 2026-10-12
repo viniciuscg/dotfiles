@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# Cores embutidas (%{F…}) para combinar com o tema branco da barra
+# Cores embutidas (%{F…}) na paleta "Dirt" (ver theme/palette.sh)
 
-battery=$(ls /sys/class/power_supply/ 2>/dev/null | grep -i "bat" | head -1)
+battery=""
+for b in /sys/class/power_supply/BAT* /sys/class/power_supply/bat*; do
+    [ -e "$b" ] && battery=$(basename "$b") && break
+done
 
 if [ -z "$battery" ]; then
     echo ""
@@ -12,9 +15,9 @@ fi
 capacity=$(cat /sys/class/power_supply/$battery/capacity 2>/dev/null || echo "0")
 status=$(cat /sys/class/power_supply/$battery/status 2>/dev/null || echo "Unknown")
 
-ACCENT='%{F#e8e8e8}'
-GREEN='%{F#98c379}'
-RED='%{F#e06c75}'
+ACCENT='%{F#d4be98}'
+GREEN='%{F#9a9c62}'
+RED='%{F#a85050}'
 CLR='%{F-}'
 
 if [ "$status" = "Charging" ]; then

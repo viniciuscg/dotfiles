@@ -1,72 +1,74 @@
+@import "colors.rasi"
+
 * {
-    background-color: #1a1a1a;
-    text-color:       #cccccc;
+    background-color: @bg;
+    text-color:       @fg;
     font:             "JetBrainsMono Nerd Font 10";
 }
 
 configuration {
     show-icons:        true;
-    icon-theme:        "Papirus-Dark";
+    icon-theme:        "Yaru-wartybrown-dark";
     display-drun:      " Apps";
 }
 
 window {
     width:            380px;
-    background-color: #1a1a1a;
+    background-color: @bg;
     border:           1px;
-    border-color:     #2a2a2a;
-    border-radius:    12px;
+    border-color:     @line;
+    border-radius:    8px;
     location:         center;
 }
 
 mainbox {
     padding:          8px;
-    background-color: #1a1a1a;
+    background-color: @bg;
 }
 
 inputbar {
-    background-color: #222222;
-    border-radius:    8px;
+    background-color: @bg-alt;
+    border-radius:    6px;
     padding:          8px 12px;
     margin:           0px 0px 8px 0px;
     children:         [ prompt, entry ];
 }
 
 prompt {
-    text-color:       #e8e8e8;
+    text-color:       @fg-bright;
     padding:          0px 6px 0px 0px;
 }
 
 entry {
-    text-color:       #cccccc;
+    text-color:       @fg;
     placeholder:      "Search...";
-    placeholder-color: #555555;
+    placeholder-color: @gray;
 }
 
 listview {
     lines:            7;
     scrollbar:        false;
-    background-color: #1a1a1a;
+    background-color: @bg;
     spacing:          2px;
 }
 
 element {
     padding:          8px 10px;
-    border-radius:    6px;
-    background-color: #1a1a1a;
+    border-radius:    4px;
+    background-color: @bg;
 }
 
 element selected {
-    background-color: #2a2a2a;
+    background-color: @bg-sel;
 }
 
 element-text {
-    text-color:       #cccccc;
+    text-color:       @fg;
     background-color: inherit;
 }
 
 element selected element-text {
-    text-color: #e8e8e8;
+    text-color: @fg-bright;
 }
 
 element-icon {
