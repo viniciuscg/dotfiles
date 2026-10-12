@@ -1,120 +1,90 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
-
-# Path to your Oh My Zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time Oh My Zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="robbyrussell"
-
-# Set list of themes to pick from when loading at random
-# Setting this variable when ZSH_THEME=random will cause zsh to load
-# a theme from this variable instead of looking in $ZSH/themes/
-# If set to an empty array, this variable will have no effect.
-# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
-
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
-
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
-
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
-
-# Uncomment the following line to change how often to auto-update (in days).
-# zstyle ':omz:update' frequency 13
-
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS="true"
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
-# You can also set it to another string to have that shown instead of the default red dots.
-# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
-# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
-# COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-
-source $ZSH/oh-my-zsh.sh
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
-
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='nvim'
-# fi
-
-alias c='clear'
-
-# Compilation flags
-# export ARCHFLAGS="-arch $(uname -m)"
-
-# Set personal aliases, overriding those provided by Oh My Zsh libs,
-# plugins, and themes. Aliases can be placed here, though Oh My Zsh
-# users are encouraged to define aliases within a top-level file in
-# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
-# - $ZSH_CUSTOM/aliases.zsh
-# - $ZSH_CUSTOM/macos.zsh
-# For a full list of active aliases, run `alias`.
+# zsh — config compartilhada dos dotfiles.
 #
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+# Não é linkada em ~/.zshrc: o ~/.zshrc da máquina é um arquivo pequeno que faz
+# `source` deste aqui e guarda o que é só daquela máquina (funções de CLIs que
+# se instalam editando o ~/.zshrc, por exemplo). Ver install.sh → install_zshrc.
 
-# Configuração automática do Go
-export PATH=$PATH:/usr/local/go/bin
-export PATH="$HOME/.local/bin:$PATH"
+# 📦 Oh My Zsh — só pelos plugins; o prompt é próprio (lá embaixo).
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME=""
+zstyle ':omz:update' mode reminder
+DISABLE_MAGIC_FUNCTIONS=true # colar texto longo sem travar
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#7c6f64"
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=40
+
+# zsh-syntax-highlighting precisa ser o último
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+[[ -r "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"
+
+# 🧭 PATH (sem duplicatas)
+typeset -U path PATH
+path=("$HOME/.local/bin" "$HOME/.cargo/bin" $path /usr/local/go/bin "$HOME/go/bin")
+
+# 📜 Histórico
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS SHARE_HISTORY
+setopt INTERACTIVE_COMMENTS NO_BEEP
+
+# ✍️ Editor
+export EDITOR="${EDITOR:-vim}"
+export VISUAL="$EDITOR"
+export LESS="-R --mouse"
+
+# 🔤 Aliases
+alias ls='ls --color=auto --group-directories-first'
+alias ll='ls -lh'
+alias la='ls -lhA'
+alias grep='grep --color=auto'
+alias cls='clear'
 
 # Claude Code
 alias c='claude'
-alias ct='claude --continue'   # continua a última conversa desta pasta
-alias cr='claude --resume'     # escolhe uma conversa antiga pra retomar
-alias cplan='claude --permission-mode plan'  # só planeja/pesquisa, não altera nada
-alias ca='claude agents'       # painel dos agentes em background
-alias cbg='claude --bg'        # cbg "tarefa" -> roda em background
-alias crc='claude --remote-control'  # sessão controlável pelo celular (claude.ai/app)
-alias cjob='claude-job'        # tarefas agendadas: cjob list | cjob on bom-dia
+alias ct='claude --continue'                # continua a última conversa desta pasta
+alias cr='claude --resume'                  # escolhe uma conversa antiga pra retomar
+alias cplan='claude --permission-mode plan' # só planeja/pesquisa, não altera nada
+alias ca='claude agents'                    # painel dos agentes em background
+alias cbg='claude --bg'                     # cbg "tarefa" -> roda em background
+alias crc='claude --remote-control'         # sessão controlável pelo celular (claude.ai/app)
+alias cjob='claude-job'                     # tarefas agendadas: cjob list | cjob on bom-dia
+
+# tmux: entra na sessão "main" ou cria
+alias tm='tmux new-session -A -s main'
+
+# 🔌 Ferramentas opcionais (só se estiverem instaladas)
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+for f in /usr/share/doc/fzf/examples/key-bindings.zsh /usr/share/fzf/key-bindings.zsh; do
+  [[ -r $f ]] && source "$f" && break
+done
+unset f
+
+# 🎨 Realce de sintaxe na paleta "Dirt"
+typeset -gA ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[command]='fg=#9a9c62'
+ZSH_HIGHLIGHT_STYLES[builtin]='fg=#9a9c62'
+ZSH_HIGHLIGHT_STYLES[alias]='fg=#9a9c62'
+ZSH_HIGHLIGHT_STYLES[function]='fg=#9a9c62'
+ZSH_HIGHLIGHT_STYLES[precommand]='fg=#9a9c62,underline'
+ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#a85050'
+ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#b8652f'
+ZSH_HIGHLIGHT_STYLES[path]='fg=#d4be98,underline'
+ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#c9a35a'
+ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#c9a35a'
+ZSH_HIGHLIGHT_STYLES[comment]='fg=#7c6f64'
+
+# ❯ Prompt próprio: rápido, sem framework.
+#   ~/pasta  branch●     (● mudanças não staged, + staged)
+#   ❯                    (vermelho se o último comando falhou)
+autoload -Uz vcs_info add-zsh-hook
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' unstagedstr '●'
+zstyle ':vcs_info:git:*' stagedstr '+'
+zstyle ':vcs_info:git:*' formats '  %F{#a89984}%b%F{#b8652f}%c%u%f'
+zstyle ':vcs_info:git:*' actionformats '  %F{#a89984}%b%f %F{#c9a35a}(%a)%f%F{#b8652f}%c%u%f'
+add-zsh-hook precmd vcs_info
+setopt PROMPT_SUBST
+PROMPT=$'\n''%F{#d4be98}%B%~%b%f${vcs_info_msg_0_}'$'\n''%(?.%F{#b8652f}.%F{#a85050})❯%f '
+RPROMPT='%(1j.%F{#7c6f64}%j bg%f.)'

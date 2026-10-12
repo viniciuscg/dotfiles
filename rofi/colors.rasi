@@ -1,0 +1,13 @@
+/* 🎨 Paleta "Dirt" — importada por todos os temas (ver theme/palette.sh) */
+* {
+    bg:        #1a1613;
+    bg-alt:    #241e19;
+    bg-sel:    #2f2722;
+    line:      #3b322b;
+    gray:      #7c6f64;
+    fg-dim:    #a89984;
+    fg:        #d4be98;
+    fg-bright: #e6d5b3;
+    accent:    #b8652f;
+    urgent:    #a85050;
+}

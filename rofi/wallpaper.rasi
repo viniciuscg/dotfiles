@@ -1,9 +1,11 @@
+@import "colors.rasi"
+
 /**
  * Rofi para escolher wallpaper: lista + barra de pesquisa (filtra pastas/nomes).
  */
 * {
-    background-color: #1a1a1a;
-    text-color:       #cccccc;
+    background-color: @bg;
+    text-color:       @fg;
     font:             "JetBrainsMono Nerd Font 10";
 }
 
@@ -13,23 +15,23 @@ configuration {
 
 window {
     width:            720px;
-    background-color: #1a1a1a;
+    background-color: @bg;
     border:           1px;
-    border-color:     #e8e8e8;
-    border-radius:    10px;
+    border-color:     @accent;
+    border-radius:    8px;
     location:         center;
 }
 
 mainbox {
     padding:          10px;
-    background-color: #1a1a1a;
+    background-color: @bg;
     spacing:          0px;
     children:         [ inputbar, listview ];
 }
 
 inputbar {
-    background-color: #222222;
-    border-radius:    8px;
+    background-color: @bg-alt;
+    border-radius:    6px;
     padding:          10px 14px;
     margin:           0px 0px 10px 0px;
     spacing:          8px;
@@ -37,45 +39,45 @@ inputbar {
 }
 
 prompt {
-    text-color:       #e8e8e8;
+    text-color:       @fg-bright;
     padding:          0px 4px 0px 0px;
 }
 
 entry {
-    text-color:           #e8e8e8;
+    text-color:           @fg-bright;
     placeholder:          "Filtrar por pasta ou nome…";
-    placeholder-color:    #666666;
+    placeholder-color:    @gray;
     cursor:               text;
 }
 
 listview {
     lines:            18;
     scrollbar:        true;
-    background-color: #1a1a1a;
+    background-color: @bg;
     spacing:          4px;
     cycle:            true;
 }
 
 element {
     padding:          8px 12px;
-    border-radius:    6px;
-    background-color: #1a1a1a;
+    border-radius:    4px;
+    background-color: @bg;
     cursor:           pointer;
 }
 
 element normal.normal {
-    background-color: #1a1a1a;
-    text-color:       #cccccc;
+    background-color: @bg;
+    text-color:       @fg;
 }
 
 element hover {
-    background-color: #2a2a2a;
-    text-color:       #e8e8e8;
+    background-color: @bg-sel;
+    text-color:       @fg-bright;
 }
 
 element selected.normal {
-    background-color: #2a2a2a;
-    text-color:       #e8e8e8;
+    background-color: @bg-sel;
+    text-color:       @fg-bright;
 }
 
 element-text {

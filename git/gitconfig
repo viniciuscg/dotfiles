@@ -1,0 +1,39 @@
+# Git — preferências compartilhadas, SEM identidade nem chave de assinatura.
+# Incluído pelo ~/.gitconfig da máquina via [include] (install.sh adiciona).
+# Nome, e-mail, signingkey e gpgsign ficam no ~/.gitconfig local.
+
+[init]
+	defaultBranch = main
+[core]
+	pager = less -FRX
+[color]
+	ui = auto
+[color "branch"]
+	current = "#b8652f" bold
+	local = "#a89984"
+	remote = "#7f8448"
+[color "diff"]
+	meta = "#7c6f64"
+	frag = "#b08a3e"
+	old = "#a85050"
+	new = "#9a9c62"
+	whitespace = "#8e3b3b" reverse
+[color "status"]
+	added = "#9a9c62"
+	changed = "#b8652f"
+	untracked = "#7c6f64"
+[diff]
+	algorithm = histogram
+	colorMoved = dimmed-zebra
+[fetch]
+	prune = true
+[push]
+	autoSetupRemote = true
+[rerere]
+	enabled = true
+[alias]
+	st = status -sb
+	lg = log --graph --format='%C(#b8652f)%h%C(reset) %C(#a89984)%ad%C(reset) %s %C(#7c6f64)%an%C(auto)%d' --date=short
+	last = log -1 --stat
+	amend = commit --amend --no-edit
+	unstage = restore --staged

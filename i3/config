@@ -1,16 +1,16 @@
 # Main modifier key (must be defined first)
 set $mod Mod4
 
-# Workspace configuration (defines $refresh_i3status and $ws variables - must be first)
+# Workspaces ($ws1..$ws10 e saída de cada um) — precisa vir antes dos atalhos
 include ~/.config/i3/workspaces.conf
 
-# Font
+# Fonte, bordas e gaps
 include ~/.config/i3/appearance.conf
 
-# Basic autostart (dex, xss-lock, nm-applet)
+# Autostart básico (dex, nm-applet, dunst)
 include ~/.config/i3/autostart_basic.conf
 
-# Audio controls (needs $refresh_i3status from workspaces.conf)
+# Áudio, player e brilho
 include ~/.config/i3/audio.conf
 
 # Window management (floating_modifier, tiling_drag)
@@ -22,7 +22,7 @@ include ~/.config/i3/keybindings.conf
 # Resize mode
 include ~/.config/i3/resize_mode.conf
 
-# Additional autostart (setxkbmap, feh, polybar)
+# Autostart adicional (teclado, monitores, polybar, wallpaper)
 include ~/.config/i3/autostart_additional.conf
 
 # Screenshot shortcuts
