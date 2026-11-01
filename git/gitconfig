@@ -9,19 +9,19 @@
 [color]
 	ui = auto
 [color "branch"]
-	current = "#b8652f" bold
-	local = "#a89984"
-	remote = "#7f8448"
+	current = "#7fb3c1" bold
+	local = "#94a6ab"
+	remote = "#6f9a7d"
 [color "diff"]
-	meta = "#7c6f64"
-	frag = "#b08a3e"
-	old = "#a85050"
-	new = "#9a9c62"
-	whitespace = "#8e3b3b" reverse
+	meta = "#6a8290"
+	frag = "#a8966a"
+	old = "#cf6b78"
+	new = "#8fbc9a"
+	whitespace = "#b35866" reverse
 [color "status"]
-	added = "#9a9c62"
-	changed = "#b8652f"
-	untracked = "#7c6f64"
+	added = "#8fbc9a"
+	changed = "#7fb3c1"
+	untracked = "#6a8290"
 [diff]
 	algorithm = histogram
 	colorMoved = dimmed-zebra
@@ -33,7 +33,7 @@
 	enabled = true
 [alias]
 	st = status -sb
-	lg = log --graph --format='%C(#b8652f)%h%C(reset) %C(#a89984)%ad%C(reset) %s %C(#7c6f64)%an%C(auto)%d' --date=short
+	lg = log --graph --format='%C(#7fb3c1)%h%C(reset) %C(#94a6ab)%ad%C(reset) %s %C(#6a8290)%an%C(auto)%d' --date=short
 	last = log -1 --stat
 	amend = commit --amend --no-edit
 	unstage = restore --staged

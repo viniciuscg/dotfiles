@@ -1,6 +1,6 @@
-# dotfiles — Dirt
+# dotfiles — Yuta
 
-Desktop Linux com i3 em X11, inspirado no grunge de Seattle e na estética das tatuagens blackwork: fundos marrom-quase-preto, tinta, Gruvbox apagado. A ideia é ser escuro, sóbrio e legível.
+Desktop Linux com i3 em X11, inspirado no Yuta Okkotsu em Jujutsu Kaisen (arco Culling Game): fundos preto-azulados, texto branco e o azul-aço da lâmina como destaque. A ideia é ser escuro, sóbrio e legível.
 
 Ferramentas: **i3 · polybar · picom · rofi · dunst · kitty · zsh · tmux**
 
@@ -11,35 +11,35 @@ Ferramentas: **i3 · polybar · picom · rofi · dunst · kitty · zsh · tmux**
 - **Nada em silêncio.** O instalador é idempotente, tem `--dry-run` e faz backup antes de substituir qualquer arquivo.
 - **Público por padrão.** Nenhum segredo vai para o repo. O que é só da máquina (identidade do git, funções de CLIs da empresa, tokens) fica em arquivos locais.
 
-## Paleta "Dirt"
+## Paleta "Yuta"
 
 Fonte da verdade: [`theme/palette.sh`](theme/palette.sh). Arquivos que não leem variáveis (kitty, i3, polybar, rofi, dunst, tmux, git) repetem os valores abaixo.
 
 | Papel | Cor | Onde aparece |
 | --- | --- | --- |
-| `bg0` | `#110e0b` | barra, fundo do tmux, janelas sem foco, tela de bloqueio |
-| `bg` | `#1a1613` | terminal, menus, notificações |
-| `bg1` | `#241e19` | campos de entrada, mensagem do usuário |
-| `bg2` | `#2f2722` | item selecionado, aba ativa |
-| `line` | `#3b322b` | bordas e separadores |
-| `gray` | `#7c6f64` | texto secundário, sugestões do shell |
-| `fg-dim` | `#a89984` | texto de apoio |
-| `fg` | `#d4be98` | texto principal (off-white quente) |
-| `fg-bright` | `#e6d5b3` | destaque de texto |
-| `accent` | `#b8652f` | laranja Gruvbox apagado: foco, prompt, bordas ativas |
-| `red` | `#8e3b3b` / `#a85050` | bordô: erro, urgente |
-| `green` | `#7f8448` / `#9a9c62` | oliva: sucesso, comandos válidos |
-| `yellow` | `#b08a3e` / `#c9a35a` | ocre: avisos, strings |
-| `blue` | `#6f8584` / `#8a9e9b` | aço |
-| `magenta` | `#8a6c75` / `#a5858f` | malva |
-| `cyan` | `#6e8a6f` / `#88a389` | sálvia |
+| `bg0` | `#090d11` | barra, fundo do tmux, janelas sem foco, tela de bloqueio |
+| `bg` | `#0e1419` | terminal, menus, notificações |
+| `bg1` | `#151d24` | campos de entrada, mensagem do usuário |
+| `bg2` | `#1e2a32` | item selecionado, aba ativa |
+| `line` | `#2c3a44` | bordas e separadores |
+| `gray` | `#6a8290` | texto secundário, sugestões do shell |
+| `fg-dim` | `#94a6ab` | texto de apoio |
+| `fg` | `#d3dade` | texto principal (off-white frio) |
+| `fg-bright` | `#f5f6f6` | destaque de texto |
+| `accent` | `#7fb3c1` | azul-aço da lâmina: foco, prompt, bordas ativas |
+| `red` | `#b35866` / `#cf6b78` | vermelho frio: erro, urgente |
+| `green` | `#6f9a7d` / `#8fbc9a` | verde frio: sucesso, comandos válidos |
+| `yellow` | `#a8966a` / `#d0bc8a` | areia: avisos, strings |
+| `blue` | `#648aa0` / `#86aac0` | azul |
+| `magenta` | `#7476c4` / `#9a9fe6` | índigo |
+| `cyan` | `#5b95a3` / `#8cc4d0` | ciano |
 
 ## Estrutura
 
 ```
 install.sh              instalador (idempotente, --dry-run)
 theme/palette.sh        paleta em variáveis shell
-wallpaper/              dirt-contours.jpg e o script que o gera
+wallpaper/              dirt-contours.jpg (reserva) e o script que o gera
 i3/                     config modular (*.conf) + scripts/ (monitor, wallpaper, lock)
 polybar/                config.ini + módulos em shell
 rofi/                   colors.rasi + temas (launcher, menu de energia, calendário, wallpaper)
@@ -111,9 +111,11 @@ O pacote `pulseaudio` **não** é instalado, só o `pactl`. Em sistemas com Pipe
 
 ## Wallpaper
 
-`wallpaper/dirt-contours.jpg` (3840×2160, cerca de 400 KB) mostra curvas de nível orgânicas em tinta sobre fundo marrom-quase-preto, com uma única "veia" em laranja apagado. O lado esquerdo é mais calmo e o direito tem mais detalhe.
+O fundo padrão é `~/.config/wallpaper/yuta-culling-game.jpg` (3840×2160). É arte de terceiros e por isso não fica no repo: o `install.sh` baixa a imagem de [uhdpaper.com](https://www.uhdpaper.com/). Se o download falhar, o fundo vira o `dirt-contours.jpg`.
 
-- **Licença:** gerado do zero por [`wallpaper/generate.sh`](wallpaper/generate.sh) com ImageMagick (ruído fractal → curvas de nível). Não tem arte de terceiros e pode ser considerado domínio público (CC0).
+O `wallpaper/dirt-contours.jpg` (3840×2160, cerca de 400 KB) mostra curvas de nível orgânicas em tinta sobre fundo marrom-quase-preto, com uma única "veia" em laranja apagado. O lado esquerdo é mais calmo e o direito tem mais detalhe.
+
+- **Licença do `dirt-contours.jpg`:** gerado do zero por [`wallpaper/generate.sh`](wallpaper/generate.sh) com ImageMagick (ruído fractal → curvas de nível). Não tem arte de terceiros e pode ser considerado domínio público (CC0).
 - **Gerar outra variação:** `wallpaper/generate.sh 3840 2160 saida.jpg <semente>`. A semente padrão é 1993; cada semente desenha um relevo diferente.
 - **Vários monitores:** `polybar/wallpaper_lib.sh` lê o layout com `xrandr --listmonitors`, recorta a imagem para cada tela (preenchimento com corte central) e aplica um único fundo com `feh`. O `i3/scripts/monitor.sh` reaplica o fundo depois de cada mudança de layout.
 - **Trocar:** pelo ícone de wallpaper na polybar (abre o seletor no rofi), ou coloque imagens em `~/.config/wallpaper/` ou `~/.local/share/walls/`. A escolha fica salva em `~/.config/polybar/.wallpaper_state`. A coleção [dharmx/walls](https://github.com/dharmx/walls) é opcional: `INSTALL_DHARMX_WALLS=1 ./install.sh`.
@@ -185,7 +187,7 @@ A configuração fica em `claude/` e é aplicada pelo `install.sh` (ou só ela, 
 | --- | --- |
 | `statusline.sh` | `~/.claude/statusline.sh`: modelo, pasta, branch, contexto, limites de 5h e da semana, custo. |
 | `hooks/notify.sh` | Notificação no dunst quando o Claude pede permissão ou termina. |
-| `themes/dirt.json` | Tema na paleta Dirt, ativo via `"theme": "custom:dirt"`. O antigo `minimal.json` continua disponível. |
+| `themes/yuta.json` | Tema na paleta Yuta, ativo via `"theme": "custom:yuta"`. Os antigos `dirt.json` e `minimal.json` continuam disponíveis. |
 | `CLAUDE.md`, `skills/`, `agents/` | Instruções globais, skills e subagentes. |
 | `settings.json` | Mesclado em `~/.claude/settings.json`, não linkado, porque o Claude também grava nele. A versão anterior fica em `settings.json.pre-dotfiles`. |
 | `bin/claude-job` + `jobs/` | Tarefas agendadas (`cjob list`, `cjob on bom-dia`). |
@@ -231,4 +233,4 @@ Guia de uso: [claude/GUIA.md](claude/GUIA.md).
 
 ## Licença
 
-Dotfiles pessoais: use e modifique à vontade. O wallpaper é gerado pelo próprio repo (CC0).
+Dotfiles pessoais: use e modifique à vontade. O `dirt-contours.jpg` é gerado pelo próprio repo (CC0). O wallpaper do Yuta não faz parte do repo e pertence aos seus autores.

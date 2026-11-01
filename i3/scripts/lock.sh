@@ -8,4 +8,4 @@ dunstctl set-paused true 2>/dev/null || true
 trap 'dunstctl set-paused false 2>/dev/null || true' EXIT
 
 # -e: ignora Enter vazio · -f: mostra tentativas erradas · -n: espera desbloquear
-i3lock -n -e -f -c 110e0b "$@"
+i3lock -n -e -f -c 090d11 "$@"

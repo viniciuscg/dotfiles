@@ -21,7 +21,7 @@
     horizontal_padding = 14
     text_icon_padding = 12
     frame_width = 1
-    frame_color = "#3b322b"
+    frame_color = "#2c3a44"
     gap_size = 4
     separator_color = frame
     sort = yes
@@ -30,7 +30,7 @@
     font = JetBrainsMono Nerd Font 10
     line_height = 2
     markup = full
-    format = "<span weight='600' foreground='#e6d5b3'>%s</span>\n<span size='95%' foreground='#a89984'>%b</span>"
+    format = "<span weight='600' foreground='#f5f6f6'>%s</span>\n<span size='95%' foreground='#94a6ab'>%b</span>"
     alignment = left
     vertical_alignment = center
     show_age_threshold = 60
@@ -58,27 +58,27 @@
     mouse_right_click = close_all
 
 [urgency_low]
-    background = "#1a1613"
-    foreground = "#7c6f64"
-    frame_color = "#2f2722"
-    highlight = "#7c6f64"
+    background = "#0e1419"
+    foreground = "#6a8290"
+    frame_color = "#1e2a32"
+    highlight = "#6a8290"
     timeout = 5
     default_icon = dialog-information
 
 [urgency_normal]
-    background = "#1a1613"
-    foreground = "#a89984"
-    frame_color = "#3b322b"
-    highlight = "#b8652f"
+    background = "#0e1419"
+    foreground = "#94a6ab"
+    frame_color = "#2c3a44"
+    highlight = "#7fb3c1"
     timeout = 8
     override_pause_level = 30
     default_icon = dialog-information
 
 [urgency_critical]
-    background = "#1a1613"
-    foreground = "#e6d5b3"
-    frame_color = "#a85050"
-    highlight = "#a85050"
+    background = "#0e1419"
+    foreground = "#f5f6f6"
+    frame_color = "#cf6b78"
+    highlight = "#cf6b78"
     timeout = 0
     override_pause_level = 60
     default_icon = dialog-warning

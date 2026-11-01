@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cores embutidas (%{F…}) na paleta "Dirt" (ver theme/palette.sh)
+# Cores embutidas (%{F…}) na paleta "Yuta" (ver theme/palette.sh)
 
 battery=""
 for b in /sys/class/power_supply/BAT* /sys/class/power_supply/bat*; do
@@ -15,9 +15,9 @@ fi
 capacity=$(cat /sys/class/power_supply/$battery/capacity 2>/dev/null || echo "0")
 status=$(cat /sys/class/power_supply/$battery/status 2>/dev/null || echo "Unknown")
 
-ACCENT='%{F#d4be98}'
-GREEN='%{F#9a9c62}'
-RED='%{F#a85050}'
+ACCENT='%{F#d3dade}'
+GREEN='%{F#8fbc9a}'
+RED='%{F#cf6b78}'
 CLR='%{F-}'
 
 if [ "$status" = "Charging" ]; then

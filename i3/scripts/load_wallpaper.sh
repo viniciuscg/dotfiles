@@ -4,7 +4,8 @@
 # monitores — importante após mudanças de xrandr (ver i3/scripts/monitor.sh).
 
 STATE_FILE="$HOME/.config/polybar/.wallpaper_state"
-DEFAULT_WALLPAPER="$HOME/.config/wallpaper/dirt-contours.jpg"
+DEFAULT_WALLPAPER="$HOME/.config/wallpaper/yuta-culling-game.jpg"
+FALLBACK_WALLPAPER="$HOME/.config/wallpaper/dirt-contours.jpg"
 LIB="$HOME/.config/polybar/wallpaper_lib.sh"
 
 target=""
@@ -17,6 +18,7 @@ fi
 if [ -z "$target" ] || [ ! -f "$target" ]; then
     target="$DEFAULT_WALLPAPER"
 fi
+[ -f "$target" ] || target="$FALLBACK_WALLPAPER"
 [ -f "$target" ] || exit 0
 
 if [ -f "$LIB" ]; then

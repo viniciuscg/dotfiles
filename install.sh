@@ -22,8 +22,8 @@ CHANGED=0
 
 # 🎨 Saída
 if [[ -t 1 ]]; then
-  C_ACC=$'\033[38;2;184;101;47m' C_DIM=$'\033[38;2;124;111;100m' C_OK=$'\033[38;2;154;156;98m'
-  C_WARN=$'\033[38;2;201;163;90m' C_ERR=$'\033[38;2;168;80;80m' C_RST=$'\033[0m' C_B=$'\033[1m'
+  C_ACC=$'\033[38;2;127;179;193m' C_DIM=$'\033[38;2;106;130;144m' C_OK=$'\033[38;2;143;188;154m'
+  C_WARN=$'\033[38;2;208;188;138m' C_ERR=$'\033[38;2;207;107;120m' C_RST=$'\033[0m' C_B=$'\033[1m'
 else
   C_ACC='' C_DIM='' C_OK='' C_WARN='' C_ERR='' C_RST='' C_B=''
 fi
@@ -355,16 +355,40 @@ install_git() {
   fi
 }
 
-# 🖼️ Wallpaper padrão (gerado por wallpaper/generate.sh) + escolha atual preservada.
+# 🖼️ Baixa o wallpaper do Yuta. A imagem é arte de terceiros e o repo é público,
+# então ela não é versionada. O site só entrega o JPEG com Referer (sem ele vem
+# HTML), por isso o tipo do arquivo é conferido antes de aceitar.
+download_yuta_wallpaper() {
+  local dest="$CONFIG/wallpaper/yuta-culling-game.jpg" tmp
+  local url="https://image-5.uhdpaper.com/wallpaper/yuta-jujutsu-kaisen-s03-culling-game-4k-wallpaper-uhdpaper.com-249@5@l.jpg"
+  [[ -f "$dest" ]] && return 0
+  if ((DRY_RUN)); then
+    info "[dry-run] baixaria o wallpaper para ${dest/#$HOME/\~}"
+    return 0
+  fi
+  tmp=$(mktemp)
+  if curl -fsSL -A "Mozilla/5.0" -e "https://www.uhdpaper.com/" -o "$tmp" "$url" &&
+    [[ "$(file -b --mime-type "$tmp")" == image/jpeg ]]; then
+    mkdir -p "$(dirname "$dest")"
+    mv "$tmp" "$dest"
+    ok "wallpaper do Yuta baixado"
+  else
+    rm -f "$tmp"
+    warn "não consegui baixar o wallpaper do Yuta; o fundo padrão será dirt-contours.jpg"
+  fi
+}
+
+# 🖼️ Wallpaper padrão (Yuta, baixado; dirt-contours.jpg como reserva) + escolha atual preservada.
 install_wallpaper() {
   step "Wallpaper"
   copy_file "$DOTFILES_DIR/wallpaper/dirt-contours.jpg" "$CONFIG/wallpaper/dirt-contours.jpg"
+  download_yuta_wallpaper
   local state="$CONFIG/polybar/.wallpaper_state"
   if [[ -f "$state" ]]; then
     info "escolha atual mantida ($(sed 's/.*"path": *"\([^"]*\)".*/\1/' "$state" | sed "s|$HOME|~|"))"
     info "para usar o novo: clique no ícone de wallpaper da polybar ou apague $state"
   else
-    ok "dirt-contours.jpg será o fundo padrão"
+    ok "yuta-culling-game.jpg será o fundo padrão (reserva: dirt-contours.jpg)"
   fi
 }
 

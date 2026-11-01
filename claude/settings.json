@@ -1,5 +1,5 @@
 {
-  "theme": "custom:dirt",
+  "theme": "custom:yuta",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",

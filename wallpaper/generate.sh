@@ -15,9 +15,9 @@ SEED=${4:-1993} # ano do Dirt
 
 if command -v magick >/dev/null 2>&1; then IM=(magick); else IM=(convert); fi
 
-BG="#110e0b"   # DIRT_BG0
+BG="#110e0b"   # fundo da antiga paleta Dirt
 INK="#3d3129"  # contornos: só um pouco acima do fundo
-RUST="#b8652f" # DIRT_ACCENT
+RUST="#b8652f" # acento da antiga paleta Dirt
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

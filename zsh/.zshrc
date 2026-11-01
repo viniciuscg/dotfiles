@@ -10,7 +10,7 @@ ZSH_THEME=""
 zstyle ':omz:update' mode reminder
 DISABLE_MAGIC_FUNCTIONS=true # colar texto longo sem travar
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#7c6f64"
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6a8290"
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=40
 
 # zsh-syntax-highlighting precisa ser o último
@@ -60,19 +60,19 @@ for f in /usr/share/doc/fzf/examples/key-bindings.zsh /usr/share/fzf/key-binding
 done
 unset f
 
-# 🎨 Realce de sintaxe na paleta "Dirt"
+# 🎨 Realce de sintaxe na paleta "Yuta"
 typeset -gA ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[command]='fg=#9a9c62'
-ZSH_HIGHLIGHT_STYLES[builtin]='fg=#9a9c62'
-ZSH_HIGHLIGHT_STYLES[alias]='fg=#9a9c62'
-ZSH_HIGHLIGHT_STYLES[function]='fg=#9a9c62'
-ZSH_HIGHLIGHT_STYLES[precommand]='fg=#9a9c62,underline'
-ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#a85050'
-ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#b8652f'
-ZSH_HIGHLIGHT_STYLES[path]='fg=#d4be98,underline'
-ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#c9a35a'
-ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#c9a35a'
-ZSH_HIGHLIGHT_STYLES[comment]='fg=#7c6f64'
+ZSH_HIGHLIGHT_STYLES[command]='fg=#8fbc9a'
+ZSH_HIGHLIGHT_STYLES[builtin]='fg=#8fbc9a'
+ZSH_HIGHLIGHT_STYLES[alias]='fg=#8fbc9a'
+ZSH_HIGHLIGHT_STYLES[function]='fg=#8fbc9a'
+ZSH_HIGHLIGHT_STYLES[precommand]='fg=#8fbc9a,underline'
+ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#cf6b78'
+ZSH_HIGHLIGHT_STYLES[reserved-word]='fg=#7fb3c1'
+ZSH_HIGHLIGHT_STYLES[path]='fg=#d3dade,underline'
+ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#d0bc8a'
+ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#d0bc8a'
+ZSH_HIGHLIGHT_STYLES[comment]='fg=#6a8290'
 
 # ❯ Prompt próprio: rápido, sem framework.
 #   ~/pasta  branch●     (● mudanças não staged, + staged)
@@ -82,9 +82,9 @@ zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:git:*' check-for-changes true
 zstyle ':vcs_info:git:*' unstagedstr '●'
 zstyle ':vcs_info:git:*' stagedstr '+'
-zstyle ':vcs_info:git:*' formats '  %F{#a89984}%b%F{#b8652f}%c%u%f'
-zstyle ':vcs_info:git:*' actionformats '  %F{#a89984}%b%f %F{#c9a35a}(%a)%f%F{#b8652f}%c%u%f'
+zstyle ':vcs_info:git:*' formats '  %F{#94a6ab}%b%F{#7fb3c1}%c%u%f'
+zstyle ':vcs_info:git:*' actionformats '  %F{#94a6ab}%b%f %F{#d0bc8a}(%a)%f%F{#7fb3c1}%c%u%f'
 add-zsh-hook precmd vcs_info
 setopt PROMPT_SUBST
-PROMPT=$'\n''%F{#d4be98}%B%~%b%f${vcs_info_msg_0_}'$'\n''%(?.%F{#b8652f}.%F{#a85050})❯%f '
-RPROMPT='%(1j.%F{#7c6f64}%j bg%f.)'
+PROMPT=$'\n''%F{#d3dade}%B%~%b%f${vcs_info_msg_0_}'$'\n''%(?.%F{#7fb3c1}.%F{#cf6b78})❯%f '
+RPROMPT='%(1j.%F{#6a8290}%j bg%f.)'
